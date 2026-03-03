@@ -8,6 +8,13 @@ Este repositório contém o desenvolvimento de um compilador para a linguagem **
 
 O objetivo desta meta é o desenvolvimento de um analisador lexical utilizando a ferramenta **Lex** e a linguagem **C**. O analisador processa o ficheiro de entrada através do `stdin` e identifica os tokens de acordo com a especificação da linguagem.
 
+### Setup do Ambiente
+
+```bash
+sudo apt-get update
+sudo apt-get install -y flex bison gcc make valgrind gdb
+```
+
 ### Como Executar
 
 O binário gerado deve obrigatoriamente chamar-se `jucompiler`.
@@ -18,7 +25,7 @@ Para gerar o analisador, utiliza os seguintes comandos no terminal:
 lex jucompiler.l
 ```
 ```bash
-gcc lex.yy.c -o jucompiler
+cc lex.yy.c -o jucompiler
 ```
 #### 2. Execução
 
