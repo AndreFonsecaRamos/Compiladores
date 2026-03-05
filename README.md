@@ -31,9 +31,9 @@ cc lex.yy.c -o jucompiler
 
 O programa aceita diferentes opções de visualização no `stdout`:
 
-* **Listagem de Tokens (`-1`)**: Imprime todos os tokens identificados e as mensagens de erro. Sempre que um token admita mais do que um valor semântico, este é impresso entre parêntesis logo a seguir ao nome do token.
+* **Listagem de Tokens (`-l`)**: Imprime todos os tokens identificados e as mensagens de erro. Sempre que um token admita mais do que um valor semântico, este é impresso entre parêntesis logo a seguir ao nome do token.
     ```bash
-    ./jucompiler -1 < programa.java
+    ./jucompiler -l < programa.java
     ```
 * **Apenas Erros (`-e1` ou sem opção)**: Na ausência de qualquer opção, ou se invocado com a opção `-e1`, o programa escreve no `stdout` apenas as mensagens de erro.
     ```bash
