@@ -53,12 +53,14 @@ EXPONENT        [eE][+-]?{DIGITS}
 %%
     /* Comentários de linha */
 
-"//".*                      { COL_UPDATE(); }
+"//"[^\r\n]*                { ; }
 
     /* Comentários de bloco */
 
 "/*"                        { SAVE_POS(); BEGIN(COMMENT); col += yyleng; }
 <COMMENT>"*/"               { col += yyleng; BEGIN(INITIAL); }
+<COMMENT>\r\n               { line++; col = 1; }
+<COMMENT>\r                 { line++; col = 1; }
 <COMMENT>\n                 { line++; col = 1; }
 <COMMENT>.                  { col++; }
 <COMMENT><<EOF>>            { printf("Line %d, col %d: unterminated comment\n", token_line, token_col); BEGIN(INITIAL); return 0; }
@@ -81,7 +83,7 @@ EXPONENT        [eE][+-]?{DIGITS}
 
                             col++;
                             BEGIN(INITIAL);
-                            if(print_tokens) {
+                            if(print_tokens && !escape_invalido) {
                                 buffer_string[comprimento_string] = '\0';
                                 printf("STRLIT(\"%s\")\n", buffer_string);
                             }
@@ -105,22 +107,44 @@ EXPONENT        [eE][+-]?{DIGITS}
 
                             }
 
+<STRLIT>\\/[\r\n]           {
+
+                            printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);
+                            buffer_string[comprimento_string++] = yytext[0];
+                            col++;
+
+                            }
+
+<STRLIT>\r\n                {
+
+                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                            line++; col = 1;
+                            BEGIN(INITIAL);
+
+                            }
+
 <STRLIT>\n                  {
-                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                                line++; col = 1;
-                                BEGIN(INITIAL);
+
+                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                            line++; col = 1;
+                            BEGIN(INITIAL);
+
                             }
 
 <STRLIT>\r                  {
-                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                                col++;
-                                BEGIN(INITIAL);
+
+                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                            line++; col = 1;
+                            BEGIN(INITIAL);
+
                             }
 
 <STRLIT><<EOF>>             {
-                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                                BEGIN(INITIAL);
-                                return 0;
+
+                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                            BEGIN(INITIAL);
+                            return 0;
+
                             }
 
 <STRLIT>.                   { buffer_string[comprimento_string++] = yytext[0]; col++; }
@@ -153,51 +177,51 @@ EXPONENT        [eE][+-]?{DIGITS}
 
     /* RESERVED: palavras reservadas Java não usadas em Juc */
 
-"++"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"--"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"null"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"Integer"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"System"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"abstract"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"assert"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"break"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"byte"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"case"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"catch"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"char"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"const"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"continue"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"default"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"do"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"enum"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"extends"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"final"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"finally"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"float"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"for"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"goto"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"implements"                { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"import"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"instanceof"                { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"interface"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"long"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"native"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"new"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"package"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"private"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"protected"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"short"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"strictfp"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"super"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"switch"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"synchronized"              { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"this"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"throw"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"throws"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"transient"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"try"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-"volatile"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-
+"++"                        { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"--"                        { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"null"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"Integer"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"System"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"abstract"                  { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"assert"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"break"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"byte"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"case"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"catch"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"char"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"const"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"continue"                  { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"default"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"do"                        { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"enum"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"extends"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"final"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"finally"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"float"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"for"                       { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"goto"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"implements"                { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"import"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"instanceof"                { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"interface"                 { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"long"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"native"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"new"                       { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"package"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"private"                   { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"protected"                 { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"short"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"strictfp"                  { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"super"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"switch"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"synchronized"              { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"this"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"throw"                     { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"throws"                    { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"transient"                 { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"try"                       { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+"volatile"                  { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+    
     /* Operadores multi-carácter (ANTES dos simples) */
 
 "&&"                        { SAVE_POS(); PRINT_TOKEN("AND"); COL_UPDATE(); }
@@ -239,7 +263,7 @@ EXPONENT        [eE][+-]?{DIGITS}
 {DIGITS}"."{DIGITS}{EXPONENT}?    { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
 {DIGITS}"."{EXPONENT}             { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
 "."{DIGITS}{EXPONENT}?            { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
-{DIGITS}"."/[^a-zA-Z_$]           { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+{DIGITS}"."                       { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
 {DIGITS}{EXPONENT}                { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }      
 
     /* NATURAL */
@@ -255,7 +279,9 @@ EXPONENT        [eE][+-]?{DIGITS}
 
 " "                         { col++; }
 \t                          { col++; }
-\r                          { col++; }
+\f                          { col++; }
+\r\n                        { line++; col = 1; }
+\r                          { line++; col = 1; }
 \n                          { line++; col = 1; }
 
     /* Erro léxical */
