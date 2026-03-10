@@ -33,13 +33,17 @@ O programa aceita diferentes opções de visualização no `stdout`:
 
 * **Listagem de Tokens (`-l`)**: Imprime todos os tokens identificados e as mensagens de erro. Sempre que um token admita mais do que um valor semântico, este é impresso entre parêntesis logo a seguir ao nome do token.
     ```bash
-    ./jucompiler -l < programa.java
+    ./jucompiler -l
     ```
 * **Apenas Erros (`-e1` ou sem opção)**: Na ausência de qualquer opção, ou se invocado com a opção `-e1`, o programa escreve no `stdout` apenas as mensagens de erro.
     ```bash
-    ./jucompiler -e1 < programa.java
+    ./jucompiler -e1 
     ```
-
+* **Executar Todos os Casos de Teste**:
+    ```bash
+    chmod +x /root/comp-26-project/src/scripts/test_lexer.sh
+    /root/comp-26-project/src/scripts/test_lexer.sh
+    ```
 ---
 
 ### Tratamento de Erros Lexicais
