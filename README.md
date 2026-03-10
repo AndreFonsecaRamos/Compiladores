@@ -22,11 +22,9 @@ O binário gerado deve obrigatoriamente chamar-se `jucompiler`.
 #### 1. Compilação
 Para gerar o analisador, utiliza os seguintes comandos no terminal:
 ```bash
-lex jucompiler.l
+make all
 ```
-```bash
-cc lex.yy.c -o jucompiler
-```
+
 #### 2. Execução
 
 O programa aceita diferentes opções de visualização no `stdout`:
@@ -41,8 +39,18 @@ O programa aceita diferentes opções de visualização no `stdout`:
     ```
 * **Executar Todos os Casos de Teste**:
     ```bash
-    chmod +x /root/comp-26-project/src/scripts/test_lexer.sh
-    /root/comp-26-project/src/scripts/test_lexer.sh
+    make test
+    ```
+
+#### 3. Limpeza
+
+* **Limpeza do ficheiro jucompiler e do ficheiro .c**
+    ```bash
+    make clean 
+    ```
+* **Limpeza dos ficheiros de resultado**
+    ```bash
+    make clean_test 
     ```
 ---
 
