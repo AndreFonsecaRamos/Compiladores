@@ -1,5 +1,8 @@
 /* João Francisco - 2023228417 */
+
 %{
+#include <stdio.h>
+#include <string.h>
 
 /* Modo de operação */
 
@@ -40,8 +43,6 @@ ALNUM       [a-zA-Z0-9_$]
 /* Partes númericas */
 
 DIGITS          {DIGIT}({DIGIT}|_)*{DIGIT}|{DIGIT}
-INT_PART        {DIGITS}
-FRAC_PART       {DIGITS}
 EXPONENT        [eE][+-]?{DIGITS}
 
 /* Start conditions */
@@ -104,22 +105,22 @@ EXPONENT        [eE][+-]?{DIGITS}
 
                             }
 
-<STRLIT>\n|\r               {
+<STRLIT>\n                  {
+                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                                line++; col = 1;
+                                BEGIN(INITIAL);
+                            }
 
-                            if(yytext[0] == '\n') { line++; col = 1; }
-                            else if(yytext[0] == '\r') { col++; }
-                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                            BEGIN(INITIAL);
-
+<STRLIT>\r                  {
+                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                                col++;
+                                BEGIN(INITIAL);
                             }
 
 <STRLIT><<EOF>>             {
-
-                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                            BEGIN(INITIAL);
-                            
-                            return 0;
-
+                                printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+                                BEGIN(INITIAL);
+                                return 0;
                             }
 
 <STRLIT>.                   { buffer_string[comprimento_string++] = yytext[0]; col++; }
@@ -132,26 +133,11 @@ EXPONENT        [eE][+-]?{DIGITS}
 
     /* Boolean literals (ANTES de IDENTIFIER) */
 
-"true"/{ALNUM}              { /* seguido de alnum → é identifier, reject */ REJECT; }
-"false"/{ALNUM}             { REJECT; }
 "true"                      { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
 "false"                     { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
 
     /* Palavras-chave Juc (ANTES de IDENTIFIER) */
     
-"boolean"/{ALNUM}           { REJECT; }
-"class"/{ALNUM}             { REJECT; }
-"double"/{ALNUM}            { REJECT; }
-"else"/{ALNUM}              { REJECT; }
-"if"/{ALNUM}                { REJECT; }
-"int"/{ALNUM}               { REJECT; }
-"public"/{ALNUM}            { REJECT; }
-"return"/{ALNUM}            { REJECT; }
-"static"/{ALNUM}            { REJECT; }
-"String"/{ALNUM}            { REJECT; }
-"void"/{ALNUM}              { REJECT; }
-"while"/{ALNUM}             { REJECT; }
-
 "boolean"                   { SAVE_POS(); PRINT_TOKEN("BOOL"); COL_UPDATE(); }
 "class"                     { SAVE_POS(); PRINT_TOKEN("CLASS"); COL_UPDATE(); }
 "double"                    { SAVE_POS(); PRINT_TOKEN("DOUBLE"); COL_UPDATE(); }
@@ -169,15 +155,48 @@ EXPONENT        [eE][+-]?{DIGITS}
 
 "++"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
 "--"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
-
-    /* null, Integer, System (isolados como palavras) */
-
-"null"/{ALNUM}              { REJECT; }
-"Integer"/{ALNUM}           { REJECT; }
-"System"/{ALNUM}            { REJECT; }
 "null"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
 "Integer"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
 "System"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"abstract"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"assert"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"break"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"byte"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"case"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"catch"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"char"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"const"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"continue"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"default"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"do"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"enum"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"extends"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"final"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"finally"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"float"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"for"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"goto"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"implements"                { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"import"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"instanceof"                { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"interface"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"long"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"native"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"new"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"package"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"private"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"protected"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"short"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"strictfp"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"super"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"switch"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"synchronized"              { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"this"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"throw"                     { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"throws"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"transient"                 { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"try"                       { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"volatile"                  { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
 
     /* Operadores multi-carácter (ANTES dos simples) */
 
@@ -215,14 +234,22 @@ EXPONENT        [eE][+-]?{DIGITS}
 ";"                         { SAVE_POS(); PRINT_TOKEN("SEMICOLON"); COL_UPDATE(); }
 ","                         { SAVE_POS(); PRINT_TOKEN("COMMA"); COL_UPDATE(); }
 
+    /* Decimal (ANTES de NATURAL para evitar conflitos por conta do ".") */
+
+{DIGITS}"."{DIGITS}{EXPONENT}?    { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+{DIGITS}"."{EXPONENT}             { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+"."{DIGITS}{EXPONENT}?            { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+{DIGITS}"."/[^a-zA-Z_$]           { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+{DIGITS}{EXPONENT}                { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }      
+
     /* NATURAL */
-0                               { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
-{DIGIT_NZ}({DIGIT}|_)*{DIGIT}   { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
-{DIGIT_NZ}                      { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+0                                 { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+{DIGIT_NZ}({DIGIT}|_)*{DIGIT}     { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+{DIGIT_NZ}                        { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
 
     /* Identifier */
 
-{LETTER}{ALNUM}*            { SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); }
+{LETTER}{ALNUM}*                  { SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); }
 
     /* Espaços em branco */
 
@@ -239,11 +266,6 @@ EXPONENT        [eE][+-]?{DIGITS}
 
                             }
 %%
-
-#include <stdio.h>
-#include <string.h>
-
-extern int yylex();
 
 int main(int argc, char *argv[]) {
 
@@ -262,7 +284,6 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int yywrap() {  
-
+int yywrap() {
     return 1;
 }
