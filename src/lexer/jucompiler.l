@@ -124,10 +124,105 @@ EXPONENT        [eE][+-]?{DIGITS}
 
 <STRLIT>.                   { buffer_string[comprimento_string++] = yytext[0]; col++; }
 
+    /* Tokens especiais (ANTES de IDENTIFIER) */
+
+"System.out.print"          { SAVE_POS(); PRINT_TOKEN("PRINT"); COL_UPDATE(); }
+"Integer.parseInt"          { SAVE_POS(); PRINT_TOKEN("PARSEINT"); COL_UPDATE(); }
+".length"                   { SAVE_POS(); PRINT_TOKEN("DOTLENGTH"); COL_UPDATE(); }
+
+    /* Boolean literals (ANTES de IDENTIFIER) */
+
+"true"/{ALNUM}              { /* seguido de alnum → é identifier, reject */ REJECT; }
+"false"/{ALNUM}             { REJECT; }
+"true"                      { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
+"false"                     { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
+
+    /* Palavras-chave Juc (ANTES de IDENTIFIER) */
+    
+"boolean"/{ALNUM}           { REJECT; }
+"class"/{ALNUM}             { REJECT; }
+"double"/{ALNUM}            { REJECT; }
+"else"/{ALNUM}              { REJECT; }
+"if"/{ALNUM}                { REJECT; }
+"int"/{ALNUM}               { REJECT; }
+"public"/{ALNUM}            { REJECT; }
+"return"/{ALNUM}            { REJECT; }
+"static"/{ALNUM}            { REJECT; }
+"String"/{ALNUM}            { REJECT; }
+"void"/{ALNUM}              { REJECT; }
+"while"/{ALNUM}             { REJECT; }
+
+"boolean"                   { SAVE_POS(); PRINT_TOKEN("BOOL"); COL_UPDATE(); }
+"class"                     { SAVE_POS(); PRINT_TOKEN("CLASS"); COL_UPDATE(); }
+"double"                    { SAVE_POS(); PRINT_TOKEN("DOUBLE"); COL_UPDATE(); }
+"else"                      { SAVE_POS(); PRINT_TOKEN("ELSE"); COL_UPDATE(); }
+"if"                        { SAVE_POS(); PRINT_TOKEN("IF"); COL_UPDATE(); }
+"int"                       { SAVE_POS(); PRINT_TOKEN("INT"); COL_UPDATE(); }
+"public"                    { SAVE_POS(); PRINT_TOKEN("PUBLIC"); COL_UPDATE(); }
+"return"                    { SAVE_POS(); PRINT_TOKEN("RETURN"); COL_UPDATE(); }
+"static"                    { SAVE_POS(); PRINT_TOKEN("STATIC"); COL_UPDATE(); }
+"String"                    { SAVE_POS(); PRINT_TOKEN("STRING"); COL_UPDATE(); }
+"void"                      { SAVE_POS(); PRINT_TOKEN("VOID"); COL_UPDATE(); }
+"while"                     { SAVE_POS(); PRINT_TOKEN("WHILE"); COL_UPDATE(); }
+
+    /* RESERVED: palavras reservadas Java não usadas em Juc */
+
+"++"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"--"                        { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+
+    /* null, Integer, System (isolados como palavras) */
+
+"null"/{ALNUM}              { REJECT; }
+"Integer"/{ALNUM}           { REJECT; }
+"System"/{ALNUM}            { REJECT; }
+"null"                      { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"Integer"                   { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+"System"                    { SAVE_POS(); PRINT_TOKEN("RESERVED"); COL_UPDATE(); }
+
+    /* Operadores multi-carácter (ANTES dos simples) */
+
+"&&"                        { SAVE_POS(); PRINT_TOKEN("AND"); COL_UPDATE(); }
+"||"                        { SAVE_POS(); PRINT_TOKEN("OR"); COL_UPDATE(); }
+"=="                        { SAVE_POS(); PRINT_TOKEN("EQ"); COL_UPDATE(); }
+"!="                        { SAVE_POS(); PRINT_TOKEN("NE"); COL_UPDATE(); }
+">="                        { SAVE_POS(); PRINT_TOKEN("GE"); COL_UPDATE(); }
+"<="                        { SAVE_POS(); PRINT_TOKEN("LE"); COL_UPDATE(); }
+"<<"                        { SAVE_POS(); PRINT_TOKEN("LSHIFT"); COL_UPDATE(); }
+">>"                        { SAVE_POS(); PRINT_TOKEN("RSHIFT"); COL_UPDATE(); }
+"->"                        { SAVE_POS(); PRINT_TOKEN("ARROW"); COL_UPDATE(); }
+
+    /* Operadores simples */
+
+"="                         { SAVE_POS(); PRINT_TOKEN("ASSIGN"); COL_UPDATE(); }
+"+"                         { SAVE_POS(); PRINT_TOKEN("PLUS"); COL_UPDATE(); }
+"-"                         { SAVE_POS(); PRINT_TOKEN("MINUS"); COL_UPDATE(); }
+"*"                         { SAVE_POS(); PRINT_TOKEN("STAR"); COL_UPDATE(); }
+"/"                         { SAVE_POS(); PRINT_TOKEN("DIV"); COL_UPDATE(); }
+"%"                         { SAVE_POS(); PRINT_TOKEN("MOD"); COL_UPDATE(); }
+"!"                         { SAVE_POS(); PRINT_TOKEN("NOT"); COL_UPDATE(); }
+">"                         { SAVE_POS(); PRINT_TOKEN("GT"); COL_UPDATE(); }
+"<"                         { SAVE_POS(); PRINT_TOKEN("LT"); COL_UPDATE(); }
+"^"                         { SAVE_POS(); PRINT_TOKEN("XOR"); COL_UPDATE(); }
+
+    /* Delimitadores */
+
+"{"                         { SAVE_POS(); PRINT_TOKEN("LBRACE"); COL_UPDATE(); }
+"}"                         { SAVE_POS(); PRINT_TOKEN("RBRACE"); COL_UPDATE(); }
+"("                         { SAVE_POS(); PRINT_TOKEN("LPAR"); COL_UPDATE(); }
+")"                         { SAVE_POS(); PRINT_TOKEN("RPAR"); COL_UPDATE(); }
+"["                         { SAVE_POS(); PRINT_TOKEN("LSQ"); COL_UPDATE(); }
+"]"                         { SAVE_POS(); PRINT_TOKEN("RSQ"); COL_UPDATE(); }
+";"                         { SAVE_POS(); PRINT_TOKEN("SEMICOLON"); COL_UPDATE(); }
+","                         { SAVE_POS(); PRINT_TOKEN("COMMA"); COL_UPDATE(); }
+
+    /* NATURAL */
+0                               { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+{DIGIT_NZ}({DIGIT}|_)*{DIGIT}   { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+{DIGIT_NZ}                      { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+
     /* Identifier */
 
 {LETTER}{ALNUM}*            { SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); }
-
 
     /* Espaços em branco */
 
@@ -143,11 +238,6 @@ EXPONENT        [eE][+-]?{DIGITS}
                             col++;
 
                             }
-
-    /* Tokens Especias */
-
-    
-
 %%
 
 #include <stdio.h>
