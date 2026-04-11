@@ -694,7 +694,9 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "jucompiler.l"
 /* João Francisco - 2023228417 */
-#line 4 "jucompiler.l"
+/* André Ramos - 2023227306 */
+#line 5 "jucompiler.l"
+#include "y.tab.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -725,16 +727,16 @@ int escape_invalido = 0;
 #define PRINT_TOKEN(name) if(print_tokens) printf(name "\n")
 #define PRINT_TOKEN_VAL(name, val) if(print_tokens) printf(name "(%s)\n", val)
 
-#line 729 "lex.yy.c"
+#line 731 "lex.yy.c"
 /* Abreviações */
 /* Partes númericas */
 /* Start conditions */
 
-#line 734 "lex.yy.c"
+#line 736 "lex.yy.c"
 
 #define INITIAL 0
 #define COMMENT 1
-#define STRLIT 2
+#define STRLIT_STATE 2
 
 #ifndef YY_NO_UNISTD_H
 /* Special case for "unistd.h", since it is non-ANSI. We include it way
@@ -949,12 +951,12 @@ YY_DECL
 		}
 
 	{
-#line 53 "jucompiler.l"
-
 #line 55 "jucompiler.l"
+
+#line 57 "jucompiler.l"
     /* Comentários de linha */
 
-#line 958 "lex.yy.c"
+#line 960 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1013,50 +1015,50 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 57 "jucompiler.l"
+#line 59 "jucompiler.l"
 { ; }
 	YY_BREAK
 /* Comentários de bloco */
 case 2:
 YY_RULE_SETUP
-#line 61 "jucompiler.l"
+#line 63 "jucompiler.l"
 { SAVE_POS(); BEGIN(COMMENT); col += yyleng; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 62 "jucompiler.l"
+#line 64 "jucompiler.l"
 { col += yyleng; BEGIN(INITIAL); }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 63 "jucompiler.l"
+#line 65 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 64 "jucompiler.l"
+#line 66 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 65 "jucompiler.l"
+#line 67 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 66 "jucompiler.l"
+#line 68 "jucompiler.l"
 { col++; }
 	YY_BREAK
 case YY_STATE_EOF(COMMENT):
-#line 67 "jucompiler.l"
+#line 69 "jucompiler.l"
 { printf("Line %d, col %d: unterminated comment\n", token_line, token_col); BEGIN(INITIAL); return 0; }
 	YY_BREAK
 /* Strings */
 case 8:
 YY_RULE_SETUP
-#line 71 "jucompiler.l"
+#line 73 "jucompiler.l"
 {
 
                             SAVE_POS();
@@ -1066,13 +1068,13 @@ YY_RULE_SETUP
                             buffer_string[0] = '\0';
                             escape_invalido = 0;
                             col++;
-                            BEGIN(STRLIT);
+                            BEGIN(STRLIT_STATE);
 
                             }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 83 "jucompiler.l"
+#line 85 "jucompiler.l"
 {
 
                             col++;
@@ -1081,42 +1083,46 @@ YY_RULE_SETUP
                                 buffer_string[comprimento_string] = '\0';
                                 printf("STRLIT(\"%s\")\n", buffer_string);
                             }
+                            
+                            if (!escape_invalido) {
+                                return STRLIT;
+                            }
 
                             }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 94 "jucompiler.l"
+#line 100 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 'f'; col += 2; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 95 "jucompiler.l"
+#line 101 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 'n'; col += 2; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 96 "jucompiler.l"
+#line 102 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 'r'; col += 2; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 97 "jucompiler.l"
+#line 103 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 't'; col += 2; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 98 "jucompiler.l"
+#line 104 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = '\\'; col += 2; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 99 "jucompiler.l"
+#line 105 "jucompiler.l"
 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = '"'; col += 2; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 101 "jucompiler.l"
+#line 107 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);
@@ -1134,7 +1140,7 @@ YY_LINENO_REWIND_TO(yy_bp + 1);
 (yy_c_buf_p) = yy_cp = yy_bp + 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 111 "jucompiler.l"
+#line 117 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);
@@ -1146,7 +1152,7 @@ YY_RULE_SETUP
 case 18:
 /* rule 18 can match eol */
 YY_RULE_SETUP
-#line 119 "jucompiler.l"
+#line 125 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
@@ -1158,7 +1164,7 @@ YY_RULE_SETUP
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 127 "jucompiler.l"
+#line 133 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
@@ -1169,7 +1175,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 135 "jucompiler.l"
+#line 141 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
@@ -1178,8 +1184,8 @@ YY_RULE_SETUP
 
                             }
 	YY_BREAK
-case YY_STATE_EOF(STRLIT):
-#line 143 "jucompiler.l"
+case YY_STATE_EOF(STRLIT_STATE):
+#line 149 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
@@ -1190,541 +1196,541 @@ case YY_STATE_EOF(STRLIT):
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 151 "jucompiler.l"
+#line 157 "jucompiler.l"
 { buffer_string[comprimento_string++] = yytext[0]; col++; }
 	YY_BREAK
 /* Tokens especiais (ANTES de IDENTIFIER) */
 case 22:
 YY_RULE_SETUP
-#line 155 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("PRINT"); COL_UPDATE(); }
+#line 161 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("PRINT"); COL_UPDATE(); return PRINT; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 156 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("PARSEINT"); COL_UPDATE(); }
+#line 162 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("PARSEINT"); COL_UPDATE(); return PARSEINT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 157 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("DOTLENGTH"); COL_UPDATE(); }
+#line 163 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("DOTLENGTH"); COL_UPDATE(); return DOTLENGTH; }
 	YY_BREAK
 /* Boolean literals (ANTES de IDENTIFIER) */
 case 25:
 YY_RULE_SETUP
-#line 161 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
+#line 167 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); return BOOLLIT; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 162 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); }
+#line 168 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); return BOOLLIT; }
 	YY_BREAK
 /* Palavras-chave Juc (ANTES de IDENTIFIER) */
 case 27:
 YY_RULE_SETUP
-#line 166 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("BOOL"); COL_UPDATE(); }
+#line 172 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("BOOL"); COL_UPDATE(); return BOOL; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 167 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("CLASS"); COL_UPDATE(); }
+#line 173 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("CLASS"); COL_UPDATE(); return CLASS; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 168 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("DOUBLE"); COL_UPDATE(); }
+#line 174 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("DOUBLE"); COL_UPDATE(); return DOUBLE; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 169 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("ELSE"); COL_UPDATE(); }
+#line 175 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("ELSE"); COL_UPDATE(); return ELSE; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 170 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("IF"); COL_UPDATE(); }
+#line 176 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("IF"); COL_UPDATE(); return IF; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 171 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("INT"); COL_UPDATE(); }
+#line 177 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("INT"); COL_UPDATE(); return INT; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 172 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("PUBLIC"); COL_UPDATE(); }
+#line 178 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("PUBLIC"); COL_UPDATE(); return PUBLIC; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 173 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("RETURN"); COL_UPDATE(); }
+#line 179 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("RETURN"); COL_UPDATE(); return RETURN; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 174 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("STATIC"); COL_UPDATE(); }
+#line 180 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("STATIC"); COL_UPDATE(); return STATIC; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 175 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("STRING"); COL_UPDATE(); }
+#line 181 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("STRING"); COL_UPDATE(); return STRING; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 176 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("VOID"); COL_UPDATE(); }
+#line 182 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("VOID"); COL_UPDATE(); return VOID; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 177 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("WHILE"); COL_UPDATE(); }
+#line 183 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("WHILE"); COL_UPDATE(); return WHILE; }
 	YY_BREAK
 /* RESERVED: palavras reservadas Java não usadas em Juc */
 case 39:
 YY_RULE_SETUP
-#line 181 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 187 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 182 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 188 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 183 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 189 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 184 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 190 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 185 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 191 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 186 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 192 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 187 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 193 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 188 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 194 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 189 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 195 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 190 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 196 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 191 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 197 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 192 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 198 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 193 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 199 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 194 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 200 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 195 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 201 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 196 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 202 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 197 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 203 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 198 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 204 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 199 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 205 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 200 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 206 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 201 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 207 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 202 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 208 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 203 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 209 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 204 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 210 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 205 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 211 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 206 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 212 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 207 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 213 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 208 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 214 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 209 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 215 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 210 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 216 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 211 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 217 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 212 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 218 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 213 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 219 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 214 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 220 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 215 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 221 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 216 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 222 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 217 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 223 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 218 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 224 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 219 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 225 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 220 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 226 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 221 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 227 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 80:
 YY_RULE_SETUP
-#line 222 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 228 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 223 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 229 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 224 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); }
+#line 230 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 	YY_BREAK
 /* Operadores multi-carácter (ANTES dos simples) */
 case 83:
 YY_RULE_SETUP
-#line 228 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("AND"); COL_UPDATE(); }
+#line 234 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("AND"); COL_UPDATE(); return AND; }
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 229 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("OR"); COL_UPDATE(); }
+#line 235 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("OR"); COL_UPDATE(); return OR; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 230 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("EQ"); COL_UPDATE(); }
+#line 236 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("EQ"); COL_UPDATE(); return EQ; }
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 231 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("NE"); COL_UPDATE(); }
+#line 237 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("NE"); COL_UPDATE(); return NE; }
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 232 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("GE"); COL_UPDATE(); }
+#line 238 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("GE"); COL_UPDATE(); return GE; }
 	YY_BREAK
 case 88:
 YY_RULE_SETUP
-#line 233 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LE"); COL_UPDATE(); }
+#line 239 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LE"); COL_UPDATE(); return LE; }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 234 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LSHIFT"); COL_UPDATE(); }
+#line 240 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LSHIFT"); COL_UPDATE(); return LSHIFT; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 235 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("RSHIFT"); COL_UPDATE(); }
+#line 241 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("RSHIFT"); COL_UPDATE(); return RSHIFT; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 236 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("ARROW"); COL_UPDATE(); }
+#line 242 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("ARROW"); COL_UPDATE(); return ARROW; }
 	YY_BREAK
 /* Operadores simples */
 case 92:
 YY_RULE_SETUP
-#line 240 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("ASSIGN"); COL_UPDATE(); }
+#line 246 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("ASSIGN"); COL_UPDATE(); return ASSIGN; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 241 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("PLUS"); COL_UPDATE(); }
+#line 247 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("PLUS"); COL_UPDATE(); return PLUS; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 242 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("MINUS"); COL_UPDATE(); }
+#line 248 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("MINUS"); COL_UPDATE(); return MINUS; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 243 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("STAR"); COL_UPDATE(); }
+#line 249 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("STAR"); COL_UPDATE(); return STAR; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 244 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("DIV"); COL_UPDATE(); }
+#line 250 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("DIV"); COL_UPDATE(); return DIV; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 245 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("MOD"); COL_UPDATE(); }
+#line 251 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("MOD"); COL_UPDATE(); return MOD; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 246 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("NOT"); COL_UPDATE(); }
+#line 252 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("NOT"); COL_UPDATE(); return NOT; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 247 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("GT"); COL_UPDATE(); }
+#line 253 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("GT"); COL_UPDATE(); return GT; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 248 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LT"); COL_UPDATE(); }
+#line 254 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LT"); COL_UPDATE(); return LT; }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 249 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("XOR"); COL_UPDATE(); }
+#line 255 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("XOR"); COL_UPDATE(); return XOR; }
 	YY_BREAK
 /* Delimitadores */
 case 102:
 YY_RULE_SETUP
-#line 253 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LBRACE"); COL_UPDATE(); }
+#line 259 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LBRACE"); COL_UPDATE(); return LBRACE; }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 254 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("RBRACE"); COL_UPDATE(); }
+#line 260 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("RBRACE"); COL_UPDATE(); return RBRACE; }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 255 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LPAR"); COL_UPDATE(); }
+#line 261 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LPAR"); COL_UPDATE(); return LPAR; }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 256 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("RPAR"); COL_UPDATE(); }
+#line 262 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("RPAR"); COL_UPDATE(); return RPAR; }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 257 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("LSQ"); COL_UPDATE(); }
+#line 263 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("LSQ"); COL_UPDATE(); return LSQ; }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 258 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("RSQ"); COL_UPDATE(); }
+#line 264 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("RSQ"); COL_UPDATE(); return RSQ; }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 259 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("SEMICOLON"); COL_UPDATE(); }
+#line 265 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("SEMICOLON"); COL_UPDATE(); return SEMICOLON; }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 260 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN("COMMA"); COL_UPDATE(); }
+#line 266 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN("COMMA"); COL_UPDATE(); return COMMA; }
 	YY_BREAK
 /* Decimal (ANTES de NATURAL para evitar conflitos por conta do ".") */
 case 110:
 YY_RULE_SETUP
-#line 264 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+#line 270 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 265 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+#line 271 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 266 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+#line 272 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 267 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }
+#line 273 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 268 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); }      
+#line 274 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }      
 	YY_BREAK
 /* NATURAL */
 case 115:
 YY_RULE_SETUP
-#line 271 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+#line 277 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 272 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+#line 278 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 273 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); }
+#line 279 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
 	YY_BREAK
 /* Identifier */
 case 118:
 YY_RULE_SETUP
-#line 277 "jucompiler.l"
-{ SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); }
+#line 283 "jucompiler.l"
+{ SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); return IDENTIFIER; }
 	YY_BREAK
 /* Espaços em branco */
 case 119:
 YY_RULE_SETUP
-#line 281 "jucompiler.l"
+#line 287 "jucompiler.l"
 { col++; }
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 282 "jucompiler.l"
+#line 288 "jucompiler.l"
 { col++; }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 283 "jucompiler.l"
+#line 289 "jucompiler.l"
 { col++; }
 	YY_BREAK
 case 122:
 /* rule 122 can match eol */
 YY_RULE_SETUP
-#line 284 "jucompiler.l"
+#line 290 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 285 "jucompiler.l"
+#line 291 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 case 124:
 /* rule 124 can match eol */
 YY_RULE_SETUP
-#line 286 "jucompiler.l"
+#line 292 "jucompiler.l"
 { line++; col = 1; }
 	YY_BREAK
 /* Erro léxical */
 case 125:
 YY_RULE_SETUP
-#line 289 "jucompiler.l"
+#line 295 "jucompiler.l"
 {
 
                             printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext);
@@ -1734,10 +1740,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 126:
 YY_RULE_SETUP
-#line 295 "jucompiler.l"
+#line 301 "jucompiler.l"
 ECHO;
 	YY_BREAK
-#line 1741 "lex.yy.c"
+#line 1747 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2742,25 +2748,9 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 295 "jucompiler.l"
+#line 301 "jucompiler.l"
 
 
-int main(int argc, char *argv[]) {
-
-    for (int i = 1; i < argc; i++) {
-
-        if (strcmp(argv[i], "-l") == 0) {
-            print_tokens = 1;
-            
-        } else if (strcmp(argv[i], "-e1") == 0) {
-            print_tokens = 0;
-        }
-    }
-    
-    yylex();
-    
-    return 0;
-}
 
 int yywrap() {
     return 1;
