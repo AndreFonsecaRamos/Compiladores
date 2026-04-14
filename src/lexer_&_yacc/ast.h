@@ -1,3 +1,6 @@
+/* João Francisco - 2023228417 */
+/* André Ramos - 2023227306 */
+
 #ifndef _AST_H
 #define _AST_H
 

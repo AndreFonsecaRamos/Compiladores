@@ -1,3 +1,6 @@
+/* João Francisco - 2023228417 */
+/* André Ramos - 2023227306 */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "ast.h"
