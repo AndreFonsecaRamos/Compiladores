@@ -61,8 +61,6 @@ for java_file in $JAVA_FILES; do
     dir_name=$(dirname "$java_file")
     out_file="$dir_name/$base_name.out"
 
-    # Ignorar se test_ast estiver no nome (se for um teste da fase AST, mas para já testamos todos)
-
     echo -ne "${CYAN}Teste $((total + 1)): $base_name${RESET} "
 
     # Verificar se existe o .out correspondente
@@ -73,16 +71,8 @@ for java_file in $JAVA_FILES; do
     
     total=$((total + 1))
 
-    # Determinar flag: o default da meta 2 é correr sem flags (mostra apenas erros léxicos e de sintaxe)
-    # Se o nome do ficheiro incluir "ast", podemos querer correr com "-t",
-    # mas o enunciado diz que os outputs do Moshak esperam a flag `-e2` para ver só erros ortográficos e sintáticos
-    # Mas deixamos sem flags de base porque 'se não for passada qualquer opção' reporta erros
-    # Para o Mooshak testes de AST serão avaliados com `-t`. 
-    # Por agora, faremos os testes sem flag (para apanhar Syntax Error e Erros Léxicos)
-    flag=""
-    if [[ "$base_name" == *ast* || "$base_name" == *AST* ]]; then
-        flag="-t"
-    fi
+    # Forçar a flag -t para todos os testes desta meta para podermos comparar a árvore
+    flag="-t"
 
     # Executar o parser e capturar output
     actual=$("$EXE" $flag < "$java_file" 2>&1)
