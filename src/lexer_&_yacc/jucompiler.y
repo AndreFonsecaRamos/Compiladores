@@ -440,7 +440,6 @@ int main(int argc, char *argv[]) {
     } 
     else {
         yyparse();
-        // Só imprime a árvore se os erros forem estritamente zero!
         if (num_errors == 0 && flag_t == 1) { 
             print_ast(ast_root, 0);
         }
@@ -449,7 +448,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-extern char error_token[]; // Puxa o token seguro do Lexer
+extern char error_token[]; 
 extern char buffer_string[];
 
 void yyerror(char *s) {
