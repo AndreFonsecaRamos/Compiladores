@@ -402,6 +402,7 @@ Expr:
     | LPAR error RPAR { $$ = NULL; num_errors++; }
     
     | MethodInvocation             { $$ = $1; }
+    | Assignment                   { $$ = $1; }
     | ParseArgs                    { $$ = $1; }
     
     | IDENTIFIER DOTLENGTH { 
