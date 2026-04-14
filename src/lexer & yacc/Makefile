@@ -10,8 +10,9 @@ TESTS_YACC_DIR = ../tests/yacc
 
 all: $(TARGET)
 
-$(TARGET): y.tab.c lex.yy.c
-	$(CC) $(CFLAGS) y.tab.c lex.yy.c -o $(TARGET)
+# ADICIONADO: ast.c nas dependências e no comando de compilação!
+$(TARGET): y.tab.c lex.yy.c ast.c
+	$(CC) $(CFLAGS) y.tab.c lex.yy.c ast.c -o $(TARGET)
 
 y.tab.c y.tab.h: jucompiler.y
 	$(YACC) -d jucompiler.y

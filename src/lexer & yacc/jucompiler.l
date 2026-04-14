@@ -7,70 +7,68 @@
 #include <string.h>
 
 /* Modo de operação */
-
 int print_tokens = 0;
 
 /* Tracking da posição */
-
 int line = 1;
 int col = 1;
 int token_line, token_col;
 
-/* Buffer para strings */
-
+/* Buffer para strings e erros */
 char buffer_string[4096];
+char error_token[4096]; 
 int comprimento_string = 0;
 int linha_inicio_string, coluna_inicio_string;
 int escape_invalido = 0;
 
-/* Atualizar coluna */
-
+/* Atualizar coluna e guardar token atual */
 #define COL_UPDATE() col += yyleng
-#define SAVE_POS() token_line = line; token_col = col
+#define SAVE_POS() do { \
+    token_line = line; token_col = col; \
+    strcpy(error_token, yytext); \
+} while(0)
 
 /* Imprimir token */
-
 #define PRINT_TOKEN(name) if(print_tokens) printf(name "\n")
 #define PRINT_TOKEN_VAL(name, val) if(print_tokens) printf(name "(%s)\n", val)
-
 %}
 
 /* Abreviações */
-
 DIGIT       [0-9]
 DIGIT_NZ    [1-9]
 LETTER      [a-zA-Z_$]
 ALNUM       [a-zA-Z0-9_$]
 
 /* Partes númericas */
-
 DIGITS          {DIGIT}({DIGIT}|_)*{DIGIT}|{DIGIT}
 EXPONENT        [eE][+-]?{DIGITS}
 
 /* Start conditions */
-
 %x COMMENT
 %x STRLIT_STATE
 
 %%
     /* Comentários de linha */
-
-"//"[^\r\n]*                { ; }
+"//"[^\r\n]* { ; }
 
     /* Comentários de bloco */
-
 "/*"                        { SAVE_POS(); BEGIN(COMMENT); col += yyleng; }
 <COMMENT>"*/"               { col += yyleng; BEGIN(INITIAL); }
 <COMMENT>\r\n               { line++; col = 1; }
 <COMMENT>\r                 { line++; col = 1; }
 <COMMENT>\n                 { line++; col = 1; }
 <COMMENT>.                  { col++; }
-<COMMENT><<EOF>>            { printf("Line %d, col %d: unterminated comment\n", token_line, token_col); BEGIN(INITIAL); return 0; }
+<COMMENT><<EOF>> { 
+    printf("Line %d, col %d: unterminated comment\n", token_line, token_col);
+    token_line = line;
+    token_col = col;
+    strcpy(error_token, ""); 
+    BEGIN(INITIAL); 
+    return 0; 
+}
 
     /* Strings */
-
 "\""                        {
-
                             SAVE_POS();
                             linha_inicio_string = line;
                             coluna_inicio_string = col;
@@ -79,22 +77,25 @@ EXPONENT        [eE][+-]?{DIGITS}
                             escape_invalido = 0;
                             col++;
                             BEGIN(STRLIT_STATE);
-
-                            }
-<STRLIT_STATE>"\""                {
-
-                            col++;
-                            BEGIN(INITIAL);
-                            if(print_tokens && !escape_invalido) {
-                                buffer_string[comprimento_string] = '\0';
-                                printf("STRLIT(\"%s\")\n", buffer_string);
                             }
                             
-                            if (!escape_invalido) {
-                                return STRLIT;
-                            }
-
-                            }
+<STRLIT_STATE>"\"" {
+    col++;
+    BEGIN(INITIAL);
+    if(print_tokens && !escape_invalido) {
+        buffer_string[comprimento_string] = '\0';
+        printf("STRLIT(\"%s\")\n", buffer_string);
+    }
+    
+    if (!escape_invalido) {
+        buffer_string[comprimento_string] = '\0';
+        char *quoted = malloc(comprimento_string + 3);
+        sprintf(quoted, "\"%s\"", buffer_string);
+        yylval.lexeme = quoted;
+        strcpy(error_token, quoted); 
+        return STRLIT;
+    }
+}
 
 <STRLIT_STATE>\\f                 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 'f'; col += 2; }
 <STRLIT_STATE>\\n                 { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = 'n'; col += 2; }
@@ -104,70 +105,58 @@ EXPONENT        [eE][+-]?{DIGITS}
 <STRLIT_STATE>\\\"                { buffer_string[comprimento_string++] = '\\'; buffer_string[comprimento_string++] = '"'; col += 2; }
 
 <STRLIT_STATE>\\[^fnrt\"\\\n\r]   {
-
                             printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);
                             buffer_string[comprimento_string++] = yytext[0];
                             buffer_string[comprimento_string++] = yytext[1];
                             col += 2;
                             escape_invalido = 1;
-
                             }
 
 <STRLIT_STATE>\\/[\r\n]           {
-
                             printf("Line %d, col %d: invalid escape sequence (%s)\n", line, col, yytext);
                             buffer_string[comprimento_string++] = yytext[0];
                             col++;
-
                             }
 
 <STRLIT_STATE>\r\n                {
-
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
                             line++; col = 1;
                             BEGIN(INITIAL);
-
                             }
 
 <STRLIT_STATE>\n                  {
-
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
                             line++; col = 1;
                             BEGIN(INITIAL);
-
                             }
 
 <STRLIT_STATE>\r                  {
-
                             printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
                             line++; col = 1;
                             BEGIN(INITIAL);
-
                             }
 
-<STRLIT_STATE><<EOF>>             {
-
-                            printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
-                            BEGIN(INITIAL);
-                            return 0;
-
-                            }
+<STRLIT_STATE><<EOF>> { 
+    printf("Line %d, col %d: unterminated string literal\n", linha_inicio_string, coluna_inicio_string);
+    token_line = line;
+    token_col = col;
+    strcpy(error_token, "");
+    BEGIN(INITIAL);
+    return 0;
+}
 
 <STRLIT_STATE>.                   { buffer_string[comprimento_string++] = yytext[0]; col++; }
 
-    /* Tokens especiais (ANTES de IDENTIFIER) */
-
+    /* Tokens especiais */
 "System.out.print"          { SAVE_POS(); PRINT_TOKEN("PRINT"); COL_UPDATE(); return PRINT; }
 "Integer.parseInt"          { SAVE_POS(); PRINT_TOKEN("PARSEINT"); COL_UPDATE(); return PARSEINT; }
 ".length"                   { SAVE_POS(); PRINT_TOKEN("DOTLENGTH"); COL_UPDATE(); return DOTLENGTH; }
 
-    /* Boolean literals (ANTES de IDENTIFIER) */
+    /* Boolean literals */
+"true"                      { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return BOOLLIT; }
+"false"                     { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return BOOLLIT; }
 
-"true"                      { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); return BOOLLIT; }
-"false"                     { SAVE_POS(); PRINT_TOKEN_VAL("BOOLLIT", yytext); COL_UPDATE(); return BOOLLIT; }
-
-    /* Palavras-chave Juc (ANTES de IDENTIFIER) */
-    
+    /* Palavras-chave Juc */
 "boolean"                   { SAVE_POS(); PRINT_TOKEN("BOOL"); COL_UPDATE(); return BOOL; }
 "class"                     { SAVE_POS(); PRINT_TOKEN("CLASS"); COL_UPDATE(); return CLASS; }
 "double"                    { SAVE_POS(); PRINT_TOKEN("DOUBLE"); COL_UPDATE(); return DOUBLE; }
@@ -181,8 +170,7 @@ EXPONENT        [eE][+-]?{DIGITS}
 "void"                      { SAVE_POS(); PRINT_TOKEN("VOID"); COL_UPDATE(); return VOID; }
 "while"                     { SAVE_POS(); PRINT_TOKEN("WHILE"); COL_UPDATE(); return WHILE; }
 
-    /* RESERVED: palavras reservadas Java não usadas em Juc */
-
+    /* RESERVED */
 "++"                        { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 "--"                        { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 "null"                      { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
@@ -228,8 +216,7 @@ EXPONENT        [eE][+-]?{DIGITS}
 "try"                       { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
 "volatile"                  { SAVE_POS(); PRINT_TOKEN_VAL("RESERVED", yytext); COL_UPDATE(); return RESERVED; }
     
-    /* Operadores multi-carácter (ANTES dos simples) */
-
+    /* Operadores multi-carácter */
 "&&"                        { SAVE_POS(); PRINT_TOKEN("AND"); COL_UPDATE(); return AND; }
 "||"                        { SAVE_POS(); PRINT_TOKEN("OR"); COL_UPDATE(); return OR; }
 "=="                        { SAVE_POS(); PRINT_TOKEN("EQ"); COL_UPDATE(); return EQ; }
@@ -241,7 +228,6 @@ EXPONENT        [eE][+-]?{DIGITS}
 "->"                        { SAVE_POS(); PRINT_TOKEN("ARROW"); COL_UPDATE(); return ARROW; }
 
     /* Operadores simples */
-
 "="                         { SAVE_POS(); PRINT_TOKEN("ASSIGN"); COL_UPDATE(); return ASSIGN; }
 "+"                         { SAVE_POS(); PRINT_TOKEN("PLUS"); COL_UPDATE(); return PLUS; }
 "-"                         { SAVE_POS(); PRINT_TOKEN("MINUS"); COL_UPDATE(); return MINUS; }
@@ -254,7 +240,6 @@ EXPONENT        [eE][+-]?{DIGITS}
 "^"                         { SAVE_POS(); PRINT_TOKEN("XOR"); COL_UPDATE(); return XOR; }
 
     /* Delimitadores */
-
 "{"                         { SAVE_POS(); PRINT_TOKEN("LBRACE"); COL_UPDATE(); return LBRACE; }
 "}"                         { SAVE_POS(); PRINT_TOKEN("RBRACE"); COL_UPDATE(); return RBRACE; }
 "("                         { SAVE_POS(); PRINT_TOKEN("LPAR"); COL_UPDATE(); return LPAR; }
@@ -264,25 +249,22 @@ EXPONENT        [eE][+-]?{DIGITS}
 ";"                         { SAVE_POS(); PRINT_TOKEN("SEMICOLON"); COL_UPDATE(); return SEMICOLON; }
 ","                         { SAVE_POS(); PRINT_TOKEN("COMMA"); COL_UPDATE(); return COMMA; }
 
-    /* Decimal (ANTES de NATURAL para evitar conflitos por conta do ".") */
+    /* Decimais */
+{DIGITS}"."{DIGITS}{EXPONENT}?    { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return DECIMAL; }
+{DIGITS}"."{EXPONENT}             { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return DECIMAL; }
+"."{DIGITS}{EXPONENT}?            { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return DECIMAL; }
+{DIGITS}"."                       { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return DECIMAL; }
+{DIGITS}{EXPONENT}                { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return DECIMAL; }
 
-{DIGITS}"."{DIGITS}{EXPONENT}?    { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
-{DIGITS}"."{EXPONENT}             { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
-"."{DIGITS}{EXPONENT}?            { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
-{DIGITS}"."                       { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }
-{DIGITS}{EXPONENT}                { SAVE_POS(); PRINT_TOKEN_VAL("DECIMAL", yytext); COL_UPDATE(); return DECIMAL; }      
-
-    /* NATURAL */
-0                                 { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
-{DIGIT_NZ}({DIGIT}|_)*{DIGIT}     { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
-{DIGIT_NZ}                        { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); return NATURAL; }
+    /* NATURAIS */
+0                                 { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return NATURAL; }
+{DIGIT_NZ}({DIGIT}|_)*{DIGIT}     { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return NATURAL; }
+{DIGIT_NZ}                        { SAVE_POS(); PRINT_TOKEN_VAL("NATURAL", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return NATURAL; }
 
     /* Identifier */
+{LETTER}{ALNUM}* { SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); yylval.lexeme = strdup(yytext); return IDENTIFIER; }
 
-{LETTER}{ALNUM}*                  { SAVE_POS(); PRINT_TOKEN_VAL("IDENTIFIER", yytext); COL_UPDATE(); return IDENTIFIER; }
-
-    /* Espaços em branco */
-
+    /* Espaços em branco e erros */
 " "                         { col++; }
 \t                          { col++; }
 \f                          { col++; }
@@ -290,15 +272,15 @@ EXPONENT        [eE][+-]?{DIGITS}
 \r                          { line++; col = 1; }
 \n                          { line++; col = 1; }
 
-    /* Erro léxical */
-.                           {
+.                           { printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext); col++; }
+<<EOF>> { 
+    token_line = line; 
+    token_col = col; 
+    strcpy(error_token, ""); 
+    return 0; 
+}
 
-                            printf("Line %d, col %d: illegal character (%s)\n", line, col, yytext);
-                            col++;
-
-                            }
 %%
-
 
 int yywrap() {
     return 1;
