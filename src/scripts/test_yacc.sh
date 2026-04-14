@@ -10,7 +10,7 @@ RESET="\033[0m"
 # Directórios relativos ao script
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PARSER_DIR="$PROJECT_DIR/src/lexer & yacc"
+PARSER_DIR="$PROJECT_DIR/src/lexer_&_yacc"
 TESTS_DIR="$PROJECT_DIR/src/tests/yacc"
 EXE="$PARSER_DIR/jucompiler"
 
