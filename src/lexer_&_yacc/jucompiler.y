@@ -17,6 +17,7 @@ extern char* yytext;
 int flag_l = 0;
 int flag_e1 = 0;
 int flag_t = 0;
+int flag_s = 0;
 
 struct node *ast_root;
 int num_errors = 0;
@@ -434,6 +435,9 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[i], "-t") == 0){
             flag_t = 1;
         }
+        else if (strcmp(argv[i], "-s") == 0){
+            flag_s = 1;
+        }
     }
     
     if (flag_l || flag_e1){
@@ -441,9 +445,23 @@ int main(int argc, char *argv[]) {
     } 
     else {
         yyparse();
-        if (num_errors == 0 && flag_t == 1) { 
+        if (num_errors == 0) {
+
+            if(flag_s){
+                check_program(ast_root);
+            
+
+            extern SymTable *global_table_head;
+            print_symbol_tables(global_table_head);
+
             print_ast(ast_root, 0);
-        }
+        
+            }
+
+            else if(flag_t){
+                print_ast(ast_root, 0);
+            }
+        }    
     }
     
     return 0;
