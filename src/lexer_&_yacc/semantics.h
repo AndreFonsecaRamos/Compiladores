@@ -1,5 +1,5 @@
-#ifndef SEMANTIC_H
-#define SEMANTIC_H
+#ifndef SEMANTICS_H
+#define SEMANTICS_H
 
 #include "ast.h"
 
@@ -9,7 +9,7 @@ typedef struct _symbol {
     char *param_types;      
     int is_param;           
     struct _symbol *next;   
-} Symbol;
+}Symbol;
 
 typedef struct _symtable {
     char *name;             
@@ -17,7 +17,7 @@ typedef struct _symtable {
     char *method_params;    
     Symbol *symbols;       
     struct _symtable *next; 
-} SymTable;
+}SymTable;
 
 void check_program(struct node *program_node);
 void print_symbol_tables(SymTable *head);

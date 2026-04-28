@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
-#include <semantic.h>
+#include <semantics.h>
 
 int yylex(void);
 void yyerror(char *s);
