@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include <semantic.h>
 
 int yylex(void);
 void yyerror(char *s);
@@ -15,6 +16,7 @@ extern int token_line, token_col;
 extern char* yytext;
 int flag_l = 0;
 int flag_e1 = 0;
+int flag_t = 0;
 
 struct node *ast_root;
 int num_errors = 0;
@@ -419,7 +421,6 @@ Expr:
 %%
 
 int main(int argc, char *argv[]) {
-    int flag_t = 0;
 
     for (int i = 1; i < argc; i++){
         if (strcmp(argv[i], "-l") == 0){
