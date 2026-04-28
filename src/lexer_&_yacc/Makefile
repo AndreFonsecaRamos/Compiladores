@@ -5,14 +5,15 @@ YACC = yacc
 TARGET = jucompiler
 TEST_LEXER = ../scripts/test_lexer.sh
 TEST_YACC = ../scripts/test_yacc.sh
+TEST_SEMANTICS = ../scripts/test_semantics.sh
 TESTS_LEX_DIR = ../tests/lexer
 TESTS_YACC_DIR = ../tests/yacc
+TESTS_SEMANTICS_DIR = ../tests/lexer_yacc
 
 all: $(TARGET)
 
-# ADICIONADO: ast.c nas dependências e no comando de compilação!
-$(TARGET): y.tab.c lex.yy.c ast.c
-	$(CC) $(CFLAGS) y.tab.c lex.yy.c ast.c -o $(TARGET)
+$(TARGET): y.tab.c lex.yy.c ast.c semantics.c
+	$(CC) $(CFLAGS) y.tab.c lex.yy.c ast.c semantics.c -o $(TARGET)
 
 y.tab.c y.tab.h: jucompiler.y
 	$(YACC) -d jucompiler.y
@@ -28,12 +29,17 @@ test_yacc: $(TARGET)
 	@chmod +x $(TEST_YACC)
 	@$(TEST_YACC)
 
-test: test_lex test_yacc
+test_semantics: $(TARGET)
+	@chmod +x $(TEST_SEMANTICS)
+	@$(TEST_SEMANTICS)
+
+test: test_lex test_yacc test_semantics
 
 clean_test:
 	@echo "A remover ficheiros .actual dos testes..."
 	rm -f $(TESTS_LEX_DIR)/*.actual
 	rm -f $(TESTS_YACC_DIR)/*.actual
+	rm -f $(TESTS_SEMANTICS_DIR)/*.actual
 
 clean: clean_test
 	@echo "A limpar ficheiros de compilação..."
