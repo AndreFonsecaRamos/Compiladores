@@ -177,7 +177,7 @@ FormalParamsList:
         addchild(param, newnode(Id, $4));
         addchild($$, param);
     }
-    | /* vazio */ { $$ = NULL; }
+    | { $$ = NULL; }
     ;
 
 MethodBody: 
@@ -194,7 +194,7 @@ MethodBody:
     ;
 
 MethodBodyContent: 
-    /* vazio */ { $$ = NULL; }
+    { $$ = NULL; }
     | MethodBodyContent Statement {
         if ($1 == NULL) $$ = newnode(Program, NULL); 
         else $$ = $1;
@@ -262,7 +262,7 @@ FieldIDList:
         else $$ = $1;
         addchild($$, newnode(Id, $3)); 
     }
-    | /* vazio */ { $$ = NULL; }
+    | { $$ = NULL; }
     ;
 
 Type: 
@@ -317,7 +317,7 @@ Statement:
     ;
 
 StatementList: 
-    /* vazio */ { $$ = NULL; }
+    { $$ = NULL; }
     | StatementList Statement { 
         if ($1 == NULL) {
             $$ = newnode(Program, NULL); 
