@@ -84,3 +84,20 @@ char* build_params_string(struct node *params_node){
     return strdup(buffer);
 }
 
+void parse_var_decls(SymTable *table, struct node *current){
+    
+    if (current == NULL) return;
+
+    if (current->category == VarDecl) {
+        struct node *type_node = current->children->node;
+        struct node *id_node = current->children->next->node;
+        add_symbol(table, id_node->token, get_type_string(type_node->category), NULL, 0);
+    }
+
+    struct node_list *child = current->children;
+    while (child != NULL) {
+        parse_var_decls(table, child->node);
+        child = child->next;
+    }
+}
+

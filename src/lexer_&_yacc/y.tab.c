@@ -73,6 +73,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
+#include "semantics.h"
 
 int yylex(void);
 void yyerror(char *s);
@@ -82,11 +83,13 @@ extern int token_line, token_col;
 extern char* yytext;
 int flag_l = 0;
 int flag_e1 = 0;
+int flag_t = 0;
+int flag_s = 0;
 
 struct node *ast_root;
 int num_errors = 0;
 
-#line 90 "y.tab.c"
+#line 93 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -245,12 +248,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "jucompiler.y"
+#line 26 "jucompiler.y"
 
     char *lexeme;
     struct node *node;
 
-#line 254 "y.tab.c"
+#line 257 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -734,15 +737,15 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    60,    60,    71,    78,    83,    94,    95,    99,   109,
-     113,   121,   127,   133,   139,   148,   162,   172,   180,   184,
-     197,   198,   203,   217,   235,   239,   260,   265,   269,   270,
-     271,   275,   278,   285,   293,   299,   303,   304,   305,   306,
-     307,   308,   312,   316,   320,   321,   333,   341,   352,   356,
-     360,   364,   371,   376,   380,   381,   382,   383,   384,   385,
-     386,   387,   388,   389,   390,   391,   392,   393,   394,   395,
-     397,   398,   399,   401,   402,   404,   405,   406,   408,   413,
-     414,   415,   416
+       0,    63,    63,    74,    81,    86,    97,    98,   102,   112,
+     116,   124,   130,   136,   142,   151,   165,   175,   183,   187,
+     200,   201,   206,   220,   238,   242,   263,   268,   272,   273,
+     274,   278,   281,   288,   296,   302,   306,   307,   308,   309,
+     310,   311,   315,   319,   323,   324,   336,   344,   355,   359,
+     363,   367,   374,   379,   383,   384,   385,   386,   387,   388,
+     389,   390,   391,   392,   393,   394,   395,   396,   397,   398,
+     400,   401,   402,   404,   405,   407,   408,   409,   411,   416,
+     417,   418,   419
 };
 #endif
 
@@ -1471,7 +1474,7 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* Program: CLASS IDENTIFIER LBRACE DeclList RBRACE  */
-#line 60 "jucompiler.y"
+#line 63 "jucompiler.y"
                                             {
         ast_root = newnode(Program, NULL);
         addchild(ast_root, newnode(Id, (yyvsp[-3].lexeme)));
@@ -1483,30 +1486,30 @@ yyreduce:
             }
         }
     }
-#line 1487 "y.tab.c"
+#line 1490 "y.tab.c"
     break;
 
   case 3: /* Program: CLASS IDENTIFIER LBRACE RBRACE  */
-#line 71 "jucompiler.y"
+#line 74 "jucompiler.y"
                                      {
         ast_root = newnode(Program, NULL);
         addchild(ast_root, newnode(Id, (yyvsp[-2].lexeme)));
     }
-#line 1496 "y.tab.c"
+#line 1499 "y.tab.c"
     break;
 
   case 4: /* DeclList: DeclList MethodDecl  */
-#line 78 "jucompiler.y"
+#line 81 "jucompiler.y"
                         {
         if ((yyvsp[-1].node) == NULL) (yyval.node) = newnode(Program, NULL);
         else (yyval.node) = (yyvsp[-1].node);
         addchild((yyval.node), (yyvsp[0].node));
     }
-#line 1506 "y.tab.c"
+#line 1509 "y.tab.c"
     break;
 
   case 5: /* DeclList: DeclList FieldDecl  */
-#line 83 "jucompiler.y"
+#line 86 "jucompiler.y"
                          {
         if ((yyvsp[-1].node) == NULL) (yyval.node) = newnode(Program, NULL);
         else (yyval.node) = (yyvsp[-1].node);
@@ -1518,26 +1521,26 @@ yyreduce:
             }
         }
     }
-#line 1522 "y.tab.c"
+#line 1525 "y.tab.c"
     break;
 
   case 6: /* DeclList: DeclList SEMICOLON  */
-#line 94 "jucompiler.y"
+#line 97 "jucompiler.y"
                          { (yyval.node) = (yyvsp[-1].node); }
-#line 1528 "y.tab.c"
+#line 1531 "y.tab.c"
     break;
 
   case 7: /* DeclList: MethodDecl  */
-#line 95 "jucompiler.y"
+#line 98 "jucompiler.y"
                  {
         (yyval.node) = newnode(Program, NULL);
         addchild((yyval.node), (yyvsp[0].node));
     }
-#line 1537 "y.tab.c"
+#line 1540 "y.tab.c"
     break;
 
   case 8: /* DeclList: FieldDecl  */
-#line 99 "jucompiler.y"
+#line 102 "jucompiler.y"
                 {
         (yyval.node) = newnode(Program, NULL);
         if ((yyvsp[0].node) != NULL) {
@@ -1548,71 +1551,71 @@ yyreduce:
             }
         }
     }
-#line 1552 "y.tab.c"
+#line 1555 "y.tab.c"
     break;
 
   case 9: /* DeclList: SEMICOLON  */
-#line 109 "jucompiler.y"
+#line 112 "jucompiler.y"
                 { (yyval.node) = NULL; }
-#line 1558 "y.tab.c"
+#line 1561 "y.tab.c"
     break;
 
   case 10: /* MethodDecl: PUBLIC STATIC MethodHeader MethodBody  */
-#line 113 "jucompiler.y"
+#line 116 "jucompiler.y"
                                           {
         (yyval.node) = newnode(MethodDecl, NULL);
         addchild((yyval.node), (yyvsp[-1].node));
         addchild((yyval.node), (yyvsp[0].node));
     }
-#line 1568 "y.tab.c"
+#line 1571 "y.tab.c"
     break;
 
   case 11: /* MethodHeader: Type IDENTIFIER LPAR FormalParams RPAR  */
-#line 121 "jucompiler.y"
+#line 124 "jucompiler.y"
                                            {
         (yyval.node) = newnode(MethodHeader, NULL);
         addchild((yyval.node), (yyvsp[-4].node));
         addchild((yyval.node), newnode(Id, (yyvsp[-3].lexeme)));
         addchild((yyval.node), (yyvsp[-1].node));
     }
-#line 1579 "y.tab.c"
+#line 1582 "y.tab.c"
     break;
 
   case 12: /* MethodHeader: VOID IDENTIFIER LPAR FormalParams RPAR  */
-#line 127 "jucompiler.y"
+#line 130 "jucompiler.y"
                                              {
         (yyval.node) = newnode(MethodHeader, NULL);
         addchild((yyval.node), newnode(Void, NULL));
         addchild((yyval.node), newnode(Id, (yyvsp[-3].lexeme)));
         addchild((yyval.node), (yyvsp[-1].node));
     }
-#line 1590 "y.tab.c"
+#line 1593 "y.tab.c"
     break;
 
   case 13: /* MethodHeader: Type IDENTIFIER LPAR RPAR  */
-#line 133 "jucompiler.y"
+#line 136 "jucompiler.y"
                                 {
         (yyval.node) = newnode(MethodHeader, NULL);
         addchild((yyval.node), (yyvsp[-3].node));
         addchild((yyval.node), newnode(Id, (yyvsp[-2].lexeme)));
         addchild((yyval.node), newnode(MethodParams, NULL));
     }
-#line 1601 "y.tab.c"
+#line 1604 "y.tab.c"
     break;
 
   case 14: /* MethodHeader: VOID IDENTIFIER LPAR RPAR  */
-#line 139 "jucompiler.y"
+#line 142 "jucompiler.y"
                                 {
         (yyval.node) = newnode(MethodHeader, NULL);
         addchild((yyval.node), newnode(Void, NULL));
         addchild((yyval.node), newnode(Id, (yyvsp[-2].lexeme)));
         addchild((yyval.node), newnode(MethodParams, NULL));
     }
-#line 1612 "y.tab.c"
+#line 1615 "y.tab.c"
     break;
 
   case 15: /* FormalParams: Type IDENTIFIER FormalParamsList  */
-#line 148 "jucompiler.y"
+#line 151 "jucompiler.y"
                                      {
         (yyval.node) = newnode(MethodParams, NULL);
         struct node *param = newnode(ParamDecl, NULL);
@@ -1627,11 +1630,11 @@ yyreduce:
             }
         }
     }
-#line 1631 "y.tab.c"
+#line 1634 "y.tab.c"
     break;
 
   case 16: /* FormalParams: STRING LSQ RSQ IDENTIFIER  */
-#line 162 "jucompiler.y"
+#line 165 "jucompiler.y"
                                 {
         (yyval.node) = newnode(MethodParams, NULL);
         struct node *param = newnode(ParamDecl, NULL);
@@ -1639,11 +1642,11 @@ yyreduce:
         addchild(param, newnode(Id, (yyvsp[0].lexeme)));
         addchild((yyval.node), param);
     }
-#line 1643 "y.tab.c"
+#line 1646 "y.tab.c"
     break;
 
   case 17: /* FormalParamsList: FormalParamsList COMMA Type IDENTIFIER  */
-#line 172 "jucompiler.y"
+#line 175 "jucompiler.y"
                                            {
         if ((yyvsp[-3].node) == NULL) (yyval.node) = newnode(Program, NULL);
         else (yyval.node) = (yyvsp[-3].node);
@@ -1652,17 +1655,17 @@ yyreduce:
         addchild(param, newnode(Id, (yyvsp[0].lexeme)));
         addchild((yyval.node), param);
     }
-#line 1656 "y.tab.c"
+#line 1659 "y.tab.c"
     break;
 
   case 18: /* FormalParamsList: %empty  */
-#line 180 "jucompiler.y"
+#line 183 "jucompiler.y"
       { (yyval.node) = NULL; }
-#line 1662 "y.tab.c"
+#line 1665 "y.tab.c"
     break;
 
   case 19: /* MethodBody: LBRACE MethodBodyContent RBRACE  */
-#line 184 "jucompiler.y"
+#line 187 "jucompiler.y"
                                     {
         (yyval.node) = newnode(MethodBody, NULL);
         if ((yyvsp[-1].node) != NULL) {
@@ -1673,27 +1676,27 @@ yyreduce:
             }
         }
     }
-#line 1677 "y.tab.c"
+#line 1680 "y.tab.c"
     break;
 
   case 20: /* MethodBodyContent: %empty  */
-#line 197 "jucompiler.y"
+#line 200 "jucompiler.y"
     { (yyval.node) = NULL; }
-#line 1683 "y.tab.c"
+#line 1686 "y.tab.c"
     break;
 
   case 21: /* MethodBodyContent: MethodBodyContent Statement  */
-#line 198 "jucompiler.y"
+#line 201 "jucompiler.y"
                                   {
         if ((yyvsp[-1].node) == NULL) (yyval.node) = newnode(Program, NULL); 
         else (yyval.node) = (yyvsp[-1].node);
         if ((yyvsp[0].node) != NULL) addchild((yyval.node), (yyvsp[0].node)); 
     }
-#line 1693 "y.tab.c"
+#line 1696 "y.tab.c"
     break;
 
   case 22: /* MethodBodyContent: MethodBodyContent VarDecl  */
-#line 203 "jucompiler.y"
+#line 206 "jucompiler.y"
                                 {
         if ((yyvsp[-1].node) == NULL) (yyval.node) = newnode(Program, NULL); 
         else (yyval.node) = (yyvsp[-1].node);
@@ -1705,11 +1708,11 @@ yyreduce:
             }
         }
     }
-#line 1709 "y.tab.c"
+#line 1712 "y.tab.c"
     break;
 
   case 23: /* FieldDecl: PUBLIC STATIC Type IDENTIFIER FieldIDList SEMICOLON  */
-#line 217 "jucompiler.y"
+#line 220 "jucompiler.y"
                                                         {
         (yyval.node) = newnode(Program, NULL); 
         struct node *first_field = newnode(FieldDecl, NULL);
@@ -1728,17 +1731,17 @@ yyreduce:
             }
         }
     }
-#line 1732 "y.tab.c"
+#line 1735 "y.tab.c"
     break;
 
   case 24: /* FieldDecl: error SEMICOLON  */
-#line 235 "jucompiler.y"
+#line 238 "jucompiler.y"
                       { (yyval.node) = NULL; num_errors++; }
-#line 1738 "y.tab.c"
+#line 1741 "y.tab.c"
     break;
 
   case 25: /* VarDecl: Type IDENTIFIER FieldIDList SEMICOLON  */
-#line 239 "jucompiler.y"
+#line 242 "jucompiler.y"
                                           {
         (yyval.node) = newnode(Program, NULL); 
         struct node *first_var = newnode(VarDecl, NULL);
@@ -1757,53 +1760,53 @@ yyreduce:
             }
         }
     }
-#line 1761 "y.tab.c"
+#line 1764 "y.tab.c"
     break;
 
   case 26: /* FieldIDList: FieldIDList COMMA IDENTIFIER  */
-#line 260 "jucompiler.y"
+#line 263 "jucompiler.y"
                                  {
         if ((yyvsp[-2].node) == NULL) (yyval.node) = newnode(Program, NULL);
         else (yyval.node) = (yyvsp[-2].node);
         addchild((yyval.node), newnode(Id, (yyvsp[0].lexeme))); 
     }
-#line 1771 "y.tab.c"
+#line 1774 "y.tab.c"
     break;
 
   case 27: /* FieldIDList: %empty  */
-#line 265 "jucompiler.y"
+#line 268 "jucompiler.y"
       { (yyval.node) = NULL; }
-#line 1777 "y.tab.c"
+#line 1780 "y.tab.c"
     break;
 
   case 28: /* Type: BOOL  */
-#line 269 "jucompiler.y"
+#line 272 "jucompiler.y"
              { (yyval.node) = newnode(Bool, NULL); }
-#line 1783 "y.tab.c"
+#line 1786 "y.tab.c"
     break;
 
   case 29: /* Type: INT  */
-#line 270 "jucompiler.y"
+#line 273 "jucompiler.y"
              { (yyval.node) = newnode(Int, NULL); }
-#line 1789 "y.tab.c"
+#line 1792 "y.tab.c"
     break;
 
   case 30: /* Type: DOUBLE  */
-#line 271 "jucompiler.y"
+#line 274 "jucompiler.y"
              { (yyval.node) = newnode(Double, NULL); }
-#line 1795 "y.tab.c"
+#line 1798 "y.tab.c"
     break;
 
   case 31: /* Statement: LBRACE StatementList RBRACE  */
-#line 275 "jucompiler.y"
+#line 278 "jucompiler.y"
                                 { 
         (yyval.node) = create_block_node((yyvsp[-1].node)); 
     }
-#line 1803 "y.tab.c"
+#line 1806 "y.tab.c"
     break;
 
   case 32: /* Statement: IF LPAR Expr RPAR Statement  */
-#line 278 "jucompiler.y"
+#line 281 "jucompiler.y"
                                                 {
         (yyval.node) = newnode(If, NULL);
         addchild((yyval.node), (yyvsp[-2].node)); 
@@ -1811,11 +1814,11 @@ yyreduce:
         else addchild((yyval.node), newnode(Block, NULL));
         addchild((yyval.node), newnode(Block, NULL));
     }
-#line 1815 "y.tab.c"
+#line 1818 "y.tab.c"
     break;
 
   case 33: /* Statement: IF LPAR Expr RPAR Statement ELSE Statement  */
-#line 285 "jucompiler.y"
+#line 288 "jucompiler.y"
                                                  {
         (yyval.node) = newnode(If, NULL);
         addchild((yyval.node), (yyvsp[-4].node)); 
@@ -1824,91 +1827,91 @@ yyreduce:
         if ((yyvsp[0].node) != NULL) addchild((yyval.node), (yyvsp[0].node)); 
         else addchild((yyval.node), newnode(Block, NULL)); 
     }
-#line 1828 "y.tab.c"
+#line 1831 "y.tab.c"
     break;
 
   case 34: /* Statement: WHILE LPAR Expr RPAR Statement  */
-#line 293 "jucompiler.y"
+#line 296 "jucompiler.y"
                                      {
         (yyval.node) = newnode(While, NULL);
         addchild((yyval.node), (yyvsp[-2].node)); 
         if ((yyvsp[0].node) != NULL) addchild((yyval.node), (yyvsp[0].node)); 
         else addchild((yyval.node), newnode(Block, NULL)); 
     }
-#line 1839 "y.tab.c"
+#line 1842 "y.tab.c"
     break;
 
   case 35: /* Statement: RETURN Expr SEMICOLON  */
-#line 299 "jucompiler.y"
+#line 302 "jucompiler.y"
                             {
         (yyval.node) = newnode(Return, NULL);
         addchild((yyval.node), (yyvsp[-1].node));
     }
-#line 1848 "y.tab.c"
+#line 1851 "y.tab.c"
     break;
 
   case 36: /* Statement: RETURN SEMICOLON  */
-#line 303 "jucompiler.y"
+#line 306 "jucompiler.y"
                        { (yyval.node) = newnode(Return, NULL); }
-#line 1854 "y.tab.c"
+#line 1857 "y.tab.c"
     break;
 
   case 37: /* Statement: MethodInvocation SEMICOLON  */
-#line 304 "jucompiler.y"
+#line 307 "jucompiler.y"
                                  { (yyval.node) = (yyvsp[-1].node); }
-#line 1860 "y.tab.c"
+#line 1863 "y.tab.c"
     break;
 
   case 38: /* Statement: Assignment SEMICOLON  */
-#line 305 "jucompiler.y"
+#line 308 "jucompiler.y"
                            { (yyval.node) = (yyvsp[-1].node); }
-#line 1866 "y.tab.c"
+#line 1869 "y.tab.c"
     break;
 
   case 39: /* Statement: ParseArgs SEMICOLON  */
-#line 306 "jucompiler.y"
+#line 309 "jucompiler.y"
                           { (yyval.node) = (yyvsp[-1].node); }
-#line 1872 "y.tab.c"
+#line 1875 "y.tab.c"
     break;
 
   case 40: /* Statement: SEMICOLON  */
-#line 307 "jucompiler.y"
+#line 310 "jucompiler.y"
                 { (yyval.node) = NULL; }
-#line 1878 "y.tab.c"
+#line 1881 "y.tab.c"
     break;
 
   case 41: /* Statement: PRINT LPAR Expr RPAR SEMICOLON  */
-#line 308 "jucompiler.y"
+#line 311 "jucompiler.y"
                                      {
         (yyval.node) = newnode(Print, NULL);
         addchild((yyval.node), (yyvsp[-2].node));
     }
-#line 1887 "y.tab.c"
+#line 1890 "y.tab.c"
     break;
 
   case 42: /* Statement: PRINT LPAR STRLIT RPAR SEMICOLON  */
-#line 312 "jucompiler.y"
+#line 315 "jucompiler.y"
                                        {
         (yyval.node) = newnode(Print, NULL);
         addchild((yyval.node), newnode(StrLit, (yyvsp[-2].lexeme)));
     }
-#line 1896 "y.tab.c"
+#line 1899 "y.tab.c"
     break;
 
   case 43: /* Statement: error SEMICOLON  */
-#line 316 "jucompiler.y"
+#line 319 "jucompiler.y"
                       { (yyval.node) = NULL; num_errors++; }
-#line 1902 "y.tab.c"
+#line 1905 "y.tab.c"
     break;
 
   case 44: /* StatementList: %empty  */
-#line 320 "jucompiler.y"
+#line 323 "jucompiler.y"
     { (yyval.node) = NULL; }
-#line 1908 "y.tab.c"
+#line 1911 "y.tab.c"
     break;
 
   case 45: /* StatementList: StatementList Statement  */
-#line 321 "jucompiler.y"
+#line 324 "jucompiler.y"
                               { 
         if ((yyvsp[-1].node) == NULL) {
             (yyval.node) = newnode(Program, NULL); 
@@ -1918,21 +1921,21 @@ yyreduce:
             (yyval.node) = (yyvsp[-1].node);
         }
     }
-#line 1922 "y.tab.c"
+#line 1925 "y.tab.c"
     break;
 
   case 46: /* Assignment: IDENTIFIER ASSIGN Expr  */
-#line 333 "jucompiler.y"
+#line 336 "jucompiler.y"
                            { 
         (yyval.node) = newnode(Assign, NULL); 
         addchild((yyval.node), newnode(Id, (yyvsp[-2].lexeme))); 
         addchild((yyval.node), (yyvsp[0].node)); 
     }
-#line 1932 "y.tab.c"
+#line 1935 "y.tab.c"
     break;
 
   case 47: /* MethodInvocation: IDENTIFIER LPAR ExprList RPAR  */
-#line 341 "jucompiler.y"
+#line 344 "jucompiler.y"
                                   { 
         (yyval.node) = newnode(Call, NULL); 
         addchild((yyval.node), newnode(Id, (yyvsp[-3].lexeme))); 
@@ -1944,237 +1947,237 @@ yyreduce:
             }
         }
     }
-#line 1948 "y.tab.c"
+#line 1951 "y.tab.c"
     break;
 
   case 48: /* MethodInvocation: IDENTIFIER LPAR RPAR  */
-#line 352 "jucompiler.y"
+#line 355 "jucompiler.y"
                            { 
         (yyval.node) = newnode(Call, NULL); 
         addchild((yyval.node), newnode(Id, (yyvsp[-2].lexeme))); 
     }
-#line 1957 "y.tab.c"
+#line 1960 "y.tab.c"
     break;
 
   case 49: /* MethodInvocation: IDENTIFIER LPAR error RPAR  */
-#line 356 "jucompiler.y"
+#line 359 "jucompiler.y"
                                  { (yyval.node) = NULL; num_errors++; }
-#line 1963 "y.tab.c"
+#line 1966 "y.tab.c"
     break;
 
   case 50: /* ExprList: ExprList COMMA Expr  */
-#line 360 "jucompiler.y"
+#line 363 "jucompiler.y"
                         { 
         addchild((yyvsp[-2].node), (yyvsp[0].node)); 
         (yyval.node) = (yyvsp[-2].node); 
     }
-#line 1972 "y.tab.c"
+#line 1975 "y.tab.c"
     break;
 
   case 51: /* ExprList: Expr  */
-#line 364 "jucompiler.y"
+#line 367 "jucompiler.y"
            { 
         (yyval.node) = newnode(Program, NULL);
         addchild((yyval.node), (yyvsp[0].node)); 
     }
-#line 1981 "y.tab.c"
+#line 1984 "y.tab.c"
     break;
 
   case 52: /* ParseArgs: PARSEINT LPAR IDENTIFIER LSQ Expr RSQ RPAR  */
-#line 371 "jucompiler.y"
+#line 374 "jucompiler.y"
                                                { 
         (yyval.node) = newnode(ParseArgs, NULL); 
         addchild((yyval.node), newnode(Id, (yyvsp[-4].lexeme))); 
         addchild((yyval.node), (yyvsp[-2].node)); 
     }
-#line 1991 "y.tab.c"
+#line 1994 "y.tab.c"
     break;
 
   case 53: /* ParseArgs: PARSEINT LPAR error RPAR  */
-#line 376 "jucompiler.y"
+#line 379 "jucompiler.y"
                                { (yyval.node) = NULL; num_errors++; }
-#line 1997 "y.tab.c"
+#line 2000 "y.tab.c"
     break;
 
   case 54: /* Expr: Expr PLUS Expr  */
-#line 380 "jucompiler.y"
+#line 383 "jucompiler.y"
                        { (yyval.node) = newnode(Add, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2003 "y.tab.c"
+#line 2006 "y.tab.c"
     break;
 
   case 55: /* Expr: Expr MINUS Expr  */
-#line 381 "jucompiler.y"
+#line 384 "jucompiler.y"
                        { (yyval.node) = newnode(Sub, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2009 "y.tab.c"
+#line 2012 "y.tab.c"
     break;
 
   case 56: /* Expr: Expr STAR Expr  */
-#line 382 "jucompiler.y"
+#line 385 "jucompiler.y"
                        { (yyval.node) = newnode(Mul, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2015 "y.tab.c"
+#line 2018 "y.tab.c"
     break;
 
   case 57: /* Expr: Expr DIV Expr  */
-#line 383 "jucompiler.y"
+#line 386 "jucompiler.y"
                        { (yyval.node) = newnode(Div, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2021 "y.tab.c"
+#line 2024 "y.tab.c"
     break;
 
   case 58: /* Expr: Expr MOD Expr  */
-#line 384 "jucompiler.y"
+#line 387 "jucompiler.y"
                        { (yyval.node) = newnode(Mod, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2027 "y.tab.c"
+#line 2030 "y.tab.c"
     break;
 
   case 59: /* Expr: Expr AND Expr  */
-#line 385 "jucompiler.y"
+#line 388 "jucompiler.y"
                        { (yyval.node) = newnode(And, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2033 "y.tab.c"
+#line 2036 "y.tab.c"
     break;
 
   case 60: /* Expr: Expr OR Expr  */
-#line 386 "jucompiler.y"
+#line 389 "jucompiler.y"
                        { (yyval.node) = newnode(Or, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2039 "y.tab.c"
+#line 2042 "y.tab.c"
     break;
 
   case 61: /* Expr: Expr XOR Expr  */
-#line 387 "jucompiler.y"
+#line 390 "jucompiler.y"
                        { (yyval.node) = newnode(Xor, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2045 "y.tab.c"
+#line 2048 "y.tab.c"
     break;
 
   case 62: /* Expr: Expr LSHIFT Expr  */
-#line 388 "jucompiler.y"
+#line 391 "jucompiler.y"
                        { (yyval.node) = newnode(Lshift, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2051 "y.tab.c"
+#line 2054 "y.tab.c"
     break;
 
   case 63: /* Expr: Expr RSHIFT Expr  */
-#line 389 "jucompiler.y"
+#line 392 "jucompiler.y"
                        { (yyval.node) = newnode(Rshift, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2057 "y.tab.c"
+#line 2060 "y.tab.c"
     break;
 
   case 64: /* Expr: Expr EQ Expr  */
-#line 390 "jucompiler.y"
+#line 393 "jucompiler.y"
                        { (yyval.node) = newnode(Eq, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2063 "y.tab.c"
+#line 2066 "y.tab.c"
     break;
 
   case 65: /* Expr: Expr GE Expr  */
-#line 391 "jucompiler.y"
+#line 394 "jucompiler.y"
                        { (yyval.node) = newnode(Ge, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2069 "y.tab.c"
+#line 2072 "y.tab.c"
     break;
 
   case 66: /* Expr: Expr GT Expr  */
-#line 392 "jucompiler.y"
+#line 395 "jucompiler.y"
                        { (yyval.node) = newnode(Gt, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2075 "y.tab.c"
+#line 2078 "y.tab.c"
     break;
 
   case 67: /* Expr: Expr LE Expr  */
-#line 393 "jucompiler.y"
+#line 396 "jucompiler.y"
                        { (yyval.node) = newnode(Le, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2081 "y.tab.c"
+#line 2084 "y.tab.c"
     break;
 
   case 68: /* Expr: Expr LT Expr  */
-#line 394 "jucompiler.y"
+#line 397 "jucompiler.y"
                        { (yyval.node) = newnode(Lt, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2087 "y.tab.c"
+#line 2090 "y.tab.c"
     break;
 
   case 69: /* Expr: Expr NE Expr  */
-#line 395 "jucompiler.y"
+#line 398 "jucompiler.y"
                        { (yyval.node) = newnode(Ne, NULL); addchild((yyval.node), (yyvsp[-2].node)); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2093 "y.tab.c"
+#line 2096 "y.tab.c"
     break;
 
   case 70: /* Expr: MINUS Expr  */
-#line 397 "jucompiler.y"
+#line 400 "jucompiler.y"
                                    { (yyval.node) = newnode(Minus, NULL); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2099 "y.tab.c"
+#line 2102 "y.tab.c"
     break;
 
   case 71: /* Expr: PLUS Expr  */
-#line 398 "jucompiler.y"
+#line 401 "jucompiler.y"
                                    { (yyval.node) = newnode(Plus, NULL); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2105 "y.tab.c"
+#line 2108 "y.tab.c"
     break;
 
   case 72: /* Expr: NOT Expr  */
-#line 399 "jucompiler.y"
+#line 402 "jucompiler.y"
                                    { (yyval.node) = newnode(Not, NULL); addchild((yyval.node), (yyvsp[0].node)); }
-#line 2111 "y.tab.c"
+#line 2114 "y.tab.c"
     break;
 
   case 73: /* Expr: LPAR Expr RPAR  */
-#line 401 "jucompiler.y"
+#line 404 "jucompiler.y"
                                    { (yyval.node) = (yyvsp[-1].node); }
-#line 2117 "y.tab.c"
+#line 2120 "y.tab.c"
     break;
 
   case 74: /* Expr: LPAR error RPAR  */
-#line 402 "jucompiler.y"
+#line 405 "jucompiler.y"
                       { (yyval.node) = NULL; num_errors++; }
-#line 2123 "y.tab.c"
+#line 2126 "y.tab.c"
     break;
 
   case 75: /* Expr: MethodInvocation  */
-#line 404 "jucompiler.y"
+#line 407 "jucompiler.y"
                                    { (yyval.node) = (yyvsp[0].node); }
-#line 2129 "y.tab.c"
+#line 2132 "y.tab.c"
     break;
 
   case 76: /* Expr: Assignment  */
-#line 405 "jucompiler.y"
+#line 408 "jucompiler.y"
                                    { (yyval.node) = (yyvsp[0].node); }
-#line 2135 "y.tab.c"
+#line 2138 "y.tab.c"
     break;
 
   case 77: /* Expr: ParseArgs  */
-#line 406 "jucompiler.y"
+#line 409 "jucompiler.y"
                                    { (yyval.node) = (yyvsp[0].node); }
-#line 2141 "y.tab.c"
+#line 2144 "y.tab.c"
     break;
 
   case 78: /* Expr: IDENTIFIER DOTLENGTH  */
-#line 408 "jucompiler.y"
+#line 411 "jucompiler.y"
                            { 
         (yyval.node) = newnode(Length, NULL); 
         addchild((yyval.node), newnode(Id, (yyvsp[-1].lexeme))); 
     }
-#line 2150 "y.tab.c"
+#line 2153 "y.tab.c"
     break;
 
   case 79: /* Expr: IDENTIFIER  */
-#line 413 "jucompiler.y"
+#line 416 "jucompiler.y"
                                    { (yyval.node) = newnode(Id, (yyvsp[0].lexeme)); }
-#line 2156 "y.tab.c"
+#line 2159 "y.tab.c"
     break;
 
   case 80: /* Expr: NATURAL  */
-#line 414 "jucompiler.y"
+#line 417 "jucompiler.y"
                                    { (yyval.node) = newnode(Natural, (yyvsp[0].lexeme)); }
-#line 2162 "y.tab.c"
+#line 2165 "y.tab.c"
     break;
 
   case 81: /* Expr: DECIMAL  */
-#line 415 "jucompiler.y"
+#line 418 "jucompiler.y"
                                    { (yyval.node) = newnode(Decimal, (yyvsp[0].lexeme)); }
-#line 2168 "y.tab.c"
+#line 2171 "y.tab.c"
     break;
 
   case 82: /* Expr: BOOLLIT  */
-#line 416 "jucompiler.y"
+#line 419 "jucompiler.y"
                                    { (yyval.node) = newnode(BoolLit, (yyvsp[0].lexeme)); }
-#line 2174 "y.tab.c"
+#line 2177 "y.tab.c"
     break;
 
 
-#line 2178 "y.tab.c"
+#line 2181 "y.tab.c"
 
       default: break;
     }
@@ -2367,11 +2370,10 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 419 "jucompiler.y"
+#line 422 "jucompiler.y"
 
 
 int main(int argc, char *argv[]) {
-    int flag_t = 0;
 
     for (int i = 1; i < argc; i++){
         if (strcmp(argv[i], "-l") == 0){
@@ -2385,6 +2387,9 @@ int main(int argc, char *argv[]) {
         else if (strcmp(argv[i], "-t") == 0){
             flag_t = 1;
         }
+        else if (strcmp(argv[i], "-s") == 0){
+            flag_s = 1;
+        }
     }
     
     if (flag_l || flag_e1){
@@ -2392,9 +2397,23 @@ int main(int argc, char *argv[]) {
     } 
     else {
         yyparse();
-        if (num_errors == 0 && flag_t == 1) { 
+        if (num_errors == 0) {
+
+            if(flag_s){
+                check_program(ast_root);
+            
+
+            extern SymTable *global_table_head;
+            print_symbol_tables(global_table_head);
+
             print_ast(ast_root, 0);
-        }
+        
+            }
+
+            else if(flag_t){
+                print_ast(ast_root, 0);
+            }
+        }    
     }
     
     return 0;
