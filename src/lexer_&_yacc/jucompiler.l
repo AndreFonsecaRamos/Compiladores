@@ -26,6 +26,8 @@ int escape_invalido = 0;
 #define SAVE_POS() do { \
     token_line = line; token_col = col; \
     strcpy(error_token, yytext); \
+    yylloc.first_line = line; \
+    yylloc.first_column = col; \
 } while(0)
 
 /* Imprimir token */

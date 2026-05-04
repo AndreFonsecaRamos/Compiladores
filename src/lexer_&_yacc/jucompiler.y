@@ -28,6 +28,8 @@ int num_errors = 0;
     struct node *node;
 }
 
+%locations
+
 %token <lexeme> IDENTIFIER NATURAL DECIMAL STRLIT BOOLLIT
 
 %token CLASS PUBLIC STATIC
@@ -133,14 +135,12 @@ MethodHeader:
         addchild($$, newnode(Id, $2));
         addchild($$, $4);
     }
-    | Type IDENTIFIER LPAR RPAR {
-        $$ = newnode(MethodHeader, NULL);
+    | Type IDENTIFIER LPAR RPAR { $$ = newnode(MethodHeader, NULL); $$->line = @1.first_line; $$->col = @1.first_column;
         addchild($$, $1);
         addchild($$, newnode(Id, $2));
         addchild($$, newnode(MethodParams, NULL));
     }
-    | VOID IDENTIFIER LPAR RPAR {
-        $$ = newnode(MethodHeader, NULL);
+    | VOID IDENTIFIER LPAR RPAR { $$ = newnode(MethodHeader, NULL); $$->line = @1.first_line; $$->col = @1.first_column;
         addchild($$, newnode(Void, NULL));
         addchild($$, newnode(Id, $2));
         addchild($$, newnode(MethodParams, NULL));
@@ -299,11 +299,10 @@ Statement:
         if ($5 != NULL) addchild($$, $5); 
         else addchild($$, newnode(Block, NULL)); 
     }
-    | RETURN Expr SEMICOLON {
-        $$ = newnode(Return, NULL);
+    | RETURN Expr SEMICOLON { $$ = newnode(Return, NULL); $$->line = @1.first_line; $$->col = @1.first_column;
         addchild($$, $2);
     }
-    | RETURN SEMICOLON { $$ = newnode(Return, NULL); }
+    | RETURN SEMICOLON { $$ = newnode(Return, NULL); $$->line = @1.first_line; $$->col = @1.first_column; }
     | MethodInvocation SEMICOLON { $$ = $1; }
     | Assignment SEMICOLON { $$ = $1; }
     | ParseArgs SEMICOLON { $$ = $1; }
@@ -333,17 +332,22 @@ StatementList:
     ;
 
 Assignment: 
-    IDENTIFIER ASSIGN Expr { 
+    IDENTIFIER ASSIGN Expr { $$ = newnode(Assign, NULL); $$->line = @2.first_line; $$->col = @2.first_column; 
         $$ = newnode(Assign, NULL); 
-        addchild($$, newnode(Id, $1)); 
+        $$->line = @2.first_line;  
+        $$->col = @2.first_column; 
+        
+        struct node *id_node = newnode(Id, $1);
+        id_node->line = @1.first_line; 
+        id_node->col = @1.first_column;
+        
+        addchild($$, id_node); 
         addchild($$, $3); 
     }
     ;
 
 MethodInvocation: 
-    IDENTIFIER LPAR ExprList RPAR { 
-        $$ = newnode(Call, NULL); 
-        addchild($$, newnode(Id, $1)); 
+    IDENTIFIER LPAR ExprList RPAR { struct node *id_node = newnode(Id, $1); id_node->line = @1.first_line; id_node->col = @1.first_column; $$ = newnode(Call, NULL); $$->line = @1.first_line; $$->col = @1.first_column; addchild($$, id_node); 
         if ($3 != NULL) {
             struct node_list *current = $3->children;
             while (current != NULL) {
@@ -352,9 +356,7 @@ MethodInvocation:
             }
         }
     }
-    | IDENTIFIER LPAR RPAR { 
-        $$ = newnode(Call, NULL); 
-        addchild($$, newnode(Id, $1)); 
+    | IDENTIFIER LPAR RPAR { struct node *id_node = newnode(Id, $1); id_node->line = @1.first_line; id_node->col = @1.first_column; $$ = newnode(Call, NULL); $$->line = @1.first_line; $$->col = @1.first_column; addchild($$, id_node); 
     }
     | IDENTIFIER LPAR error RPAR { $$ = NULL; num_errors++; }
     ;
@@ -371,7 +373,7 @@ ExprList:
     ;
 
 ParseArgs: 
-    PARSEINT LPAR IDENTIFIER LSQ Expr RSQ RPAR { 
+    PARSEINT LPAR IDENTIFIER LSQ Expr RSQ RPAR { $$ = newnode(ParseArgs, NULL); $$->line = @1.first_line; $$->col = @1.first_column; 
         $$ = newnode(ParseArgs, NULL); 
         addchild($$, newnode(Id, $3)); 
         addchild($$, $5); 
@@ -380,26 +382,26 @@ ParseArgs:
     ;
 
 Expr: 
-    Expr PLUS Expr     { $$ = newnode(Add, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr MINUS Expr  { $$ = newnode(Sub, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr STAR Expr   { $$ = newnode(Mul, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr DIV Expr    { $$ = newnode(Div, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr MOD Expr    { $$ = newnode(Mod, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr AND Expr    { $$ = newnode(And, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr OR Expr     { $$ = newnode(Or, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr XOR Expr    { $$ = newnode(Xor, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr LSHIFT Expr { $$ = newnode(Lshift, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr RSHIFT Expr { $$ = newnode(Rshift, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr EQ Expr     { $$ = newnode(Eq, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr GE Expr     { $$ = newnode(Ge, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr GT Expr     { $$ = newnode(Gt, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr LE Expr     { $$ = newnode(Le, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr LT Expr     { $$ = newnode(Lt, NULL); addchild($$, $1); addchild($$, $3); }
-    | Expr NE Expr     { $$ = newnode(Ne, NULL); addchild($$, $1); addchild($$, $3); }
+    Expr PLUS Expr { $$ = newnode(Add, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr MINUS Expr { $$ = newnode(Sub, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr STAR Expr { $$ = newnode(Mul, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr DIV Expr { $$ = newnode(Div, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr MOD Expr { $$ = newnode(Mod, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr AND Expr { $$ = newnode(And, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr OR Expr { $$ = newnode(Or, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr XOR Expr { $$ = newnode(Xor, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr LSHIFT Expr { $$ = newnode(Lshift, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr RSHIFT Expr { $$ = newnode(Rshift, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr EQ Expr { $$ = newnode(Eq, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr GE Expr { $$ = newnode(Ge, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr GT Expr { $$ = newnode(Gt, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr LE Expr { $$ = newnode(Le, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr LT Expr { $$ = newnode(Lt, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
+    | Expr NE Expr { $$ = newnode(Ne, NULL); $$->line = @2.first_line; $$->col = @2.first_column; addchild($$, $1); addchild($$, $3); }
     
-    | MINUS Expr %prec UNARY_MINUS { $$ = newnode(Minus, NULL); addchild($$, $2); }
-    | PLUS Expr %prec UNARY_PLUS   { $$ = newnode(Plus, NULL); addchild($$, $2); }
-    | NOT Expr                     { $$ = newnode(Not, NULL); addchild($$, $2); }
+    | MINUS Expr %prec UNARY_MINUS { $$ = newnode(Minus, NULL); $$->line = @1.first_line; $$->col = @1.first_column; addchild($$, $2); }
+    | PLUS Expr %prec UNARY_PLUS { $$ = newnode(Plus, NULL); $$->line = @1.first_line; $$->col = @1.first_column; addchild($$, $2); }
+    | NOT Expr { $$ = newnode(Not, NULL); $$->line = @1.first_line; $$->col = @1.first_column; addchild($$, $2); }
     
     | LPAR Expr RPAR               { $$ = $2; }
     | LPAR error RPAR { $$ = NULL; num_errors++; }
@@ -408,15 +410,15 @@ Expr:
     | Assignment                   { $$ = $1; }
     | ParseArgs                    { $$ = $1; }
     
-    | IDENTIFIER DOTLENGTH { 
+    | IDENTIFIER DOTLENGTH { $$ = newnode(Length, NULL); $$->line = @2.first_line; $$->col = @2.first_column; 
         $$ = newnode(Length, NULL); 
         addchild($$, newnode(Id, $1)); 
     }
     
-    | IDENTIFIER                   { $$ = newnode(Id, $1); }
-    | NATURAL                      { $$ = newnode(Natural, $1); }
-    | DECIMAL                      { $$ = newnode(Decimal, $1); }
-    | BOOLLIT                      { $$ = newnode(BoolLit, $1); }
+    | IDENTIFIER { $$ = newnode(Id, $1); $$->line = @1.first_line; $$->col = @1.first_column; }
+    | NATURAL { $$ = newnode(Natural, $1); $$->line = @1.first_line; $$->col = @1.first_column; }
+    | DECIMAL { $$ = newnode(Decimal, $1); $$->line = @1.first_line; $$->col = @1.first_column; }
+    | BOOLLIT { $$ = newnode(BoolLit, $1); $$->line = @1.first_line; $$->col = @1.first_column; }
     ;
 
 %%

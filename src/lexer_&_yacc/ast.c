@@ -17,6 +17,9 @@ struct node *newnode(enum category category, char *token) {
     struct node *new = malloc(sizeof(struct node));
     new->category = category;
     new->token = token;
+    new->annotation = NULL;
+    new->line = 0; 
+    new->col = 0;  
     new->children = NULL;
     return new;
 }
@@ -47,13 +50,11 @@ struct node *create_block_node(struct node *statement_list) {
     
     struct node_list *children_list = statement_list->children;
     
-    /* Bloco vazio: {} -> retorna NULL (desaparece) */
     if (children_list == NULL) {
         free(statement_list);
         return NULL;
     }
     
-    /* Exatamente 1 filho */
     if (children_list->next == NULL) {
         struct node *single = children_list->node;
         free(children_list);
@@ -61,7 +62,6 @@ struct node *create_block_node(struct node *statement_list) {
         return single;
     }
     
-    /* Mais de 1 filho: cria nó Block */
     statement_list->category = Block;
     return statement_list;
 }
@@ -74,9 +74,17 @@ void print_ast(struct node *current, int depth) {
     }
 
     if (current->token != NULL) {
-        printf("%s(%s)\n", category_names[current->category], current->token);
+        if (current->annotation != NULL) {
+            printf("%s(%s) - %s\n", category_names[current->category], current->token, current->annotation);
+        } else {
+            printf("%s(%s)\n", category_names[current->category], current->token);
+        }
     } else {
-        printf("%s\n", category_names[current->category]);
+        if (current->annotation != NULL) {
+            printf("%s - %s\n", category_names[current->category], current->annotation);
+        } else {
+            printf("%s\n", category_names[current->category]);
+        }
     }
 
     struct node_list *child_item = current->children;
