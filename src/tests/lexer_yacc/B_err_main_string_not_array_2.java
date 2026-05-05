@@ -1,4 +1,0 @@
-class BErrMainStringNotArray2 {
-    public static void main(String args) {
-    }
-}

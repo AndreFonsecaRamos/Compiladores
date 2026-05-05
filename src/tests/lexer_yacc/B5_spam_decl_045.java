@@ -1,9 +1,0 @@
-class B5SpamDecl045 {
-    ;
-    public static int x, y, ;
-    ;
-    public static int g(int a, int, int c) {
-        return a;
-    }
-    %%%
-}
