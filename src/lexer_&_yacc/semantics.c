@@ -545,22 +545,26 @@ static void check_statement(struct node *stmt, method_table *mt) {
         case If: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
+            
+            check_statement(getchild(stmt, 1), mt);
+            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
+
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in if statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
-            check_statement(getchild(stmt, 1), mt);
-            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
             break;
         }
         case While: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
+            
+            check_statement(getchild(stmt, 1), mt);
+
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in while statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
-            check_statement(getchild(stmt, 1), mt);
             break;
         }
         case Return: {
