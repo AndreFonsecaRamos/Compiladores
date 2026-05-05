@@ -15,9 +15,10 @@ enum category {
 struct node {
     enum category category;
     char *token;
-    char *annotation;
-    int line; 
-    int col;  
+    int line;            
+    int col;             
+    int type;            
+    char *param_sig;     
     struct node_list *children;
 };
 

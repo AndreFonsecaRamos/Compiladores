@@ -448,23 +448,24 @@ int main(int argc, char *argv[]) {
     else {
         yyparse();
         if (num_errors == 0) {
+                int run_semantics = 0;
+                for (int i = 1; i < argc; i++) {
+                    if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "-e3") == 0) {
+                            run_semantics = 1;
+                    }
+                }
 
-            if(flag_s){
-                check_program(ast_root);
-            
-
-            extern SymTable *global_table_head;
-            print_symbol_tables(global_table_head);
-
-            print_ast(ast_root, 0);
-        
+                if (run_semantics) {
+                    semantic_analysis(ast_root);
+                    if (flag_s) {
+                        print_tables();
+                        printf("\n"); /* O enunciado pede 1 linha em branco entre tabelas e a AST */
+                        show_annotated(ast_root, 0);
+                    }
+                } else if (flag_t) {
+                    print_ast(ast_root, 0);
+                }
             }
-
-            else if(flag_t){
-                print_ast(ast_root, 0);
-            }
-        }    
-    }
     
     return 0;
 }

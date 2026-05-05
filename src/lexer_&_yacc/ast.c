@@ -17,9 +17,10 @@ struct node *newnode(enum category category, char *token) {
     struct node *new = malloc(sizeof(struct node));
     new->category = category;
     new->token = token;
-    new->annotation = NULL;
-    new->line = 0; 
-    new->col = 0;  
+    new->line = 0;
+    new->col = 0;
+    new->type = 0;
+    new->param_sig = NULL;
     new->children = NULL;
     return new;
 }
