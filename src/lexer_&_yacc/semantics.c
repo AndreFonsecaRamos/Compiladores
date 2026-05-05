@@ -246,6 +246,7 @@ static void build_global_table(struct node *program) {
             while ((pd = getchild(params_node, pidx++)) != NULL) {
                 struct node *pt = getchild(pd, 0);
                 struct node *pid = getchild(pd, 1);
+                
                 if (is_reserved_underscore(pid->token)) {
                     printf("Line %d, col %d: Symbol _ is reserved\n", pid->line, pid->col);
                     sem_errors++;
@@ -256,15 +257,19 @@ static void build_global_table(struct node *program) {
                 add_param(&method_params, type_to_string(category_to_type(pt->category)));
             }
 
+            // 2. Agora verificamos o nome do Método
             if (is_reserved_underscore(id_node->token)) {
                 printf("Line %d, col %d: Symbol _ is reserved\n", id_node->line, id_node->col);
                 sem_errors++;
+                free_params(method_params); // Livrar dos parâmetros
+                member->type = type_undef;  // Matar o método para a AST e Tabelas não o verem
             } else if (find_method_by_sig(gtable->symbols, id_node->token, method_params)) {
                 char *sig = make_signature(id_node->token, method_params);
                 printf("Line %d, col %d: Symbol %s already defined\n", id_node->line, id_node->col, sig);
                 sem_errors++; free(sig); free_params(method_params);
                 member->type = type_undef;
             } else {
+                // Tudo válido! Guarda o método.
                 symbol_entry *ms = add_symbol(&gtable->symbols, id_node->token, ret, 1, 0, id_node->line, id_node->col);
                 ms->params = method_params;
                 char *sig = make_signature(id_node->token, method_params);
@@ -409,7 +414,19 @@ static void check_expression(struct node *expr, method_table *mt) {
             }
             break;
         }
-        case Xor: case Lshift: case Rshift: {
+        
+        case Rshift: {
+            struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
+            if (l->type != type_int || r->type != type_int) {
+                printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
+                sem_errors++;
+                expr->type = type_undef;
+            } else {
+                expr->type = type_int;
+            }
+            break;
+        }
+        case Lshift: case Xor: {
             struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
             if (l->type != type_int || r->type != type_int) {
                 printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
@@ -418,6 +435,7 @@ static void check_expression(struct node *expr, method_table *mt) {
             expr->type = type_int;
             break;
         }
+
         case Lt: case Gt: case Le: case Ge: {
             struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
             if (!is_numeric(l->type) || !is_numeric(r->type)) {
@@ -545,22 +563,24 @@ static void check_statement(struct node *stmt, method_table *mt) {
         case If: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
+            check_statement(getchild(stmt, 1), mt); 
+            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
+            
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in if statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
-            check_statement(getchild(stmt, 1), mt);
-            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
             break;
         }
         case While: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
+            check_statement(getchild(stmt, 1), mt); 
+            
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in while statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
-            check_statement(getchild(stmt, 1), mt);
             break;
         }
         case Return: {
@@ -617,9 +637,11 @@ static void check_methods(struct node *program) {
                 if (is_reserved_underscore(vid->token)) {
                     printf("Line %d, col %d: Symbol _ is reserved\n", vid->line, vid->col);
                     sem_errors++;
+                    stmt->type = type_undef;
                 } else if (find_symbol(mt->symbols, vid->token)) {
                     printf("Line %d, col %d: Symbol %s already defined\n", vid->line, vid->col, vid->token);
                     sem_errors++;
+                    stmt->type = type_undef; 
                 } else {
                     add_symbol(&mt->symbols, vid->token, v_type, 0, 0, vid->line, vid->col);
                 }
