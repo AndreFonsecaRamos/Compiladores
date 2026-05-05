@@ -533,16 +533,16 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-extern char error_token[]; 
-extern char buffer_string[];
+extern char *error_token; 
+extern char *buffer_string;
 
 void yyerror(char *s) {
     num_errors++;
 
-    if (strcmp(error_token, "") == 0) {
+    if (!error_token || strcmp(error_token, "") == 0) {
         printf("Line %d, col %d: %s: \n", token_line, token_col, s);
     } else if (strcmp(error_token, "\"") == 0) {
-        printf("Line %d, col %d: %s: \"%s\"\n", token_line, token_col, s, buffer_string);
+        printf("Line %d, col %d: %s: \"%s\"\n", token_line, token_col, s, buffer_string ? buffer_string : "");
     } else {
         printf("Line %d, col %d: %s: %s\n", token_line, token_col, s, error_token);
     }
