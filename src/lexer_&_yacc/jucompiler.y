@@ -126,23 +126,39 @@ MethodHeader:
     Type IDENTIFIER LPAR FormalParams RPAR {
         $$ = newnode(MethodHeader, NULL);
         addchild($$, $1);
-        addchild($$, newnode(Id, $2));
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild($$, id_node);
         addchild($$, $4);
     }
     | VOID IDENTIFIER LPAR FormalParams RPAR {
         $$ = newnode(MethodHeader, NULL);
         addchild($$, newnode(Void, NULL));
-        addchild($$, newnode(Id, $2));
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild($$, id_node);
         addchild($$, $4);
     }
-    | Type IDENTIFIER LPAR RPAR { $$ = newnode(MethodHeader, NULL); $$->line = @1.first_line; $$->col = @1.first_column;
+    | Type IDENTIFIER LPAR RPAR { 
+        $$ = newnode(MethodHeader, NULL); 
+        $$->line = @1.first_line; $$->col = @1.first_column;
         addchild($$, $1);
-        addchild($$, newnode(Id, $2));
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild($$, id_node);
         addchild($$, newnode(MethodParams, NULL));
     }
-    | VOID IDENTIFIER LPAR RPAR { $$ = newnode(MethodHeader, NULL); $$->line = @1.first_line; $$->col = @1.first_column;
+    | VOID IDENTIFIER LPAR RPAR { 
+        $$ = newnode(MethodHeader, NULL); 
+        $$->line = @1.first_line; $$->col = @1.first_column;
         addchild($$, newnode(Void, NULL));
-        addchild($$, newnode(Id, $2));
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild($$, id_node);
         addchild($$, newnode(MethodParams, NULL));
     }
     ;
@@ -152,7 +168,10 @@ FormalParams:
         $$ = newnode(MethodParams, NULL);
         struct node *param = newnode(ParamDecl, NULL);
         addchild(param, $1);
-        addchild(param, newnode(Id, $2));
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild(param, id_node);
         addchild($$, param);
         if ($3 != NULL) {
             struct node_list *current = $3->children;
@@ -166,7 +185,10 @@ FormalParams:
         $$ = newnode(MethodParams, NULL);
         struct node *param = newnode(ParamDecl, NULL);
         addchild(param, newnode(StringArray, NULL));
-        addchild(param, newnode(Id, $4));
+        struct node *id_node = newnode(Id, $4);
+        id_node->line = @4.first_line;
+        id_node->col = @4.first_column;
+        addchild(param, id_node);
         addchild($$, param);
     }
     ;
@@ -177,7 +199,10 @@ FormalParamsList:
         else $$ = $1;
         struct node *param = newnode(ParamDecl, NULL);
         addchild(param, $3);
-        addchild(param, newnode(Id, $4));
+        struct node *id_node = newnode(Id, $4);
+        id_node->line = @4.first_line;
+        id_node->col = @4.first_column;
+        addchild(param, id_node);
         addchild($$, param);
     }
     | { $$ = NULL; }
@@ -221,7 +246,12 @@ FieldDecl:
         $$ = newnode(Program, NULL); 
         struct node *first_field = newnode(FieldDecl, NULL);
         addchild(first_field, $3); 
-        addchild(first_field, newnode(Id, $4));
+        
+        struct node *id_node = newnode(Id, $4);
+        id_node->line = @4.first_line;
+        id_node->col = @4.first_column;
+        addchild(first_field, id_node);
+        
         addchild($$, first_field);
         
         if ($5 != NULL) {
@@ -243,7 +273,12 @@ VarDecl:
         $$ = newnode(Program, NULL); 
         struct node *first_var = newnode(VarDecl, NULL);
         addchild(first_var, $1);
-        addchild(first_var, newnode(Id, $2));
+        
+        struct node *id_node = newnode(Id, $2);
+        id_node->line = @2.first_line;
+        id_node->col = @2.first_column;
+        addchild(first_var, id_node);
+        
         addchild($$, first_var);
         
         if ($3 != NULL) {
@@ -263,7 +298,11 @@ FieldIDList:
     FieldIDList COMMA IDENTIFIER {
         if ($1 == NULL) $$ = newnode(Program, NULL);
         else $$ = $1;
-        addchild($$, newnode(Id, $3)); 
+        
+        struct node *id_node = newnode(Id, $3);
+        id_node->line = @3.first_line;
+        id_node->col = @3.first_column;
+        addchild($$, id_node); 
     }
     | { $$ = NULL; }
     ;
