@@ -412,9 +412,16 @@ ExprList:
     ;
 
 ParseArgs: 
-    PARSEINT LPAR IDENTIFIER LSQ Expr RSQ RPAR { $$ = newnode(ParseArgs, NULL); $$->line = @1.first_line; $$->col = @1.first_column; 
+    PARSEINT LPAR IDENTIFIER LSQ Expr RSQ RPAR { 
         $$ = newnode(ParseArgs, NULL); 
-        addchild($$, newnode(Id, $3)); 
+        $$->line = @1.first_line;      
+        $$->col = @1.first_column; 
+        
+        struct node *id_node = newnode(Id, $3); 
+        id_node->line = @3.first_line; 
+        id_node->col = @3.first_column;
+        
+        addchild($$, id_node); 
         addchild($$, $5); 
     }
     | PARSEINT LPAR error RPAR { $$ = NULL; num_errors++; }
@@ -449,9 +456,16 @@ Expr:
     | Assignment                   { $$ = $1; }
     | ParseArgs                    { $$ = $1; }
     
-    | IDENTIFIER DOTLENGTH { $$ = newnode(Length, NULL); $$->line = @2.first_line; $$->col = @2.first_column; 
+    | IDENTIFIER DOTLENGTH { 
         $$ = newnode(Length, NULL); 
-        addchild($$, newnode(Id, $1)); 
+        $$->line = @2.first_line;       
+        $$->col = @2.first_column; 
+        
+        struct node *id_node = newnode(Id, $1);
+        id_node->line = @1.first_line; 
+        id_node->col = @1.first_column;
+        
+        addchild($$, id_node); 
     }
     
     | IDENTIFIER { $$ = newnode(Id, $1); $$->line = @1.first_line; $$->col = @1.first_column; }
