@@ -75,17 +75,9 @@ void print_ast(struct node *current, int depth) {
     }
 
     if (current->token != NULL) {
-        if (current->annotation != NULL) {
-            printf("%s(%s) - %s\n", category_names[current->category], current->token, current->annotation);
-        } else {
-            printf("%s(%s)\n", category_names[current->category], current->token);
-        }
+        printf("%s(%s)\n", category_names[current->category], current->token);
     } else {
-        if (current->annotation != NULL) {
-            printf("%s - %s\n", category_names[current->category], current->annotation);
-        } else {
-            printf("%s\n", category_names[current->category]);
-        }
+        printf("%s\n", category_names[current->category]);
     }
 
     struct node_list *child_item = current->children;

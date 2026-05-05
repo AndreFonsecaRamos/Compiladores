@@ -1,3 +1,6 @@
+/* João Francisco - 2023228417 */
+/* André Ramos - 2023227306 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,15 +8,12 @@
 #include "ast.h"
 #include "semantics.h"
 
-/* =========================================================================
-   TYPE UTILITIES E HELPERS DA AST
-   ========================================================================= */
-
+/* Type utilities e helpers da ast */
 static const char *type_names[] = {"int", "double", "boolean", "void", "String[]", "undef"};
 
 const char *type_to_string(enum type t) {
     if (t == type_none) return "";
-    return type_names[t - 1]; /* Ajuste do offset do enum */
+    return type_names[t - 1]; 
 }
 
 enum type category_to_type(enum category c) {
@@ -34,6 +34,7 @@ static enum type string_to_type(const char *s) {
     if (strcmp(s, "boolean") == 0) return type_boolean;
     if (strcmp(s, "String[]") == 0) return type_string_array;
     if (strcmp(s, "void") == 0) return type_void;
+
     return type_undef;
 }
 
@@ -45,6 +46,7 @@ static int is_compatible(enum type from, enum type to) {
     if (from == type_undef || to == type_undef) return 0;
     if (from == to) return 1;
     if (from == type_int && to == type_double) return 1;
+
     return 0;
 }
 
@@ -52,11 +54,12 @@ static int is_reserved_underscore(const char *name) {
     return (strcmp(name, "_") == 0);
 }
 
-/* Helper para aceder aos filhos da tua estrutura de listas ligadas */
+/* Helper para aceder aos filhos na struct node_list */
 static struct node *getchild(struct node *n, int index) {
     if (!n) return NULL;
     struct node_list *curr = n->children;
     for (int i = 0; i < index && curr; i++) curr = curr->next;
+
     return curr ? curr->node : NULL;
 }
 
@@ -77,10 +80,7 @@ static int param_name_exists_in_node(struct node *params_node, const char *name,
     return 0;
 }
 
-/* =========================================================================
-   DATA STRUCTURES
-   ========================================================================= */
-
+ /* Estruturas internas */
 typedef struct param_entry {
     char *type_str;
     struct param_entry *next;
@@ -112,10 +112,7 @@ typedef struct {
 static class_table *gtable = NULL;
 static int sem_errors = 0;
 
-/* =========================================================================
-   HELPERS DAS TABELAS
-   ========================================================================= */
-
+/* Helpers da tabela */
 static void add_param(param_entry **list, const char *type_str) {
     param_entry *p = malloc(sizeof(param_entry));
     p->type_str = strdup(type_str);
@@ -202,10 +199,7 @@ static method_table *add_method_table(const char *name, const char *sig) {
     return mt;
 }
 
-/* =========================================================================
-   PASS 1 – Tabela Global
-   ========================================================================= */
-
+/* Tabela global */
 static void build_global_table(struct node *program) {
     struct node *class_id = getchild(program, 0);
     gtable = malloc(sizeof(class_table));
@@ -281,10 +275,7 @@ static void build_global_table(struct node *program) {
     }
 }
 
-/* =========================================================================
-   PASS 2 – Tabelas Locais
-   ========================================================================= */
-
+/* Tabelas locais */
 static void populate_method_tables(struct node *program) {
     method_table *cur_mt = gtable->methods;
     int idx = 1;
@@ -300,7 +291,6 @@ static void populate_method_tables(struct node *program) {
         cur_mt = cur_mt->next;
 
         enum type ret = category_to_type(type_node->category);
-        /* Return não tem linha/coluna neste contexto da linguagem */
         add_symbol(&mt->symbols, "return", ret, 0, 0, 0, 0);
 
         int pidx = 0;
@@ -316,10 +306,7 @@ static void populate_method_tables(struct node *program) {
     }
 }
 
-/* =========================================================================
-   PASS 3 – Type Checking
-   ========================================================================= */
-
+/* Type checking */
 static const char *get_op_string(enum category c) {
     switch (c) {
         case Assign: return "="; case Add: case Plus: return "+"; case Sub: case Minus: return "-";
@@ -641,10 +628,7 @@ static void check_methods(struct node *program) {
     }
 }
 
-/* =========================================================================
-   OUTPUT – Print Tables
-   ========================================================================= */
-
+/* Print tabelas */
 void print_tables(void) {
     if (!gtable) return;
     printf("===== Class %s Symbol Table =====\n", gtable->name);
@@ -672,10 +656,7 @@ void print_tables(void) {
     }
 }
 
-/* =========================================================================
-   OUTPUT – Annotated AST
-   ========================================================================= */
-
+/* AST anotada */
 extern const char *category_names[];
 
 static int is_expr_node(enum category c) {
@@ -693,6 +674,7 @@ static int is_expr_node(enum category c) {
 void show_annotated(struct node *node, int depth) {
     if (!node) return;
     for (int i = 0; i < depth; i++) printf("..");
+    
     if (node->token == NULL) printf("%s", category_names[node->category]);
     else printf("%s(%s)", category_names[node->category], node->token);
 
@@ -708,10 +690,6 @@ void show_annotated(struct node *node, int depth) {
         child = child->next;
     }
 }
-
-/* =========================================================================
-   ENTRY POINT
-   ========================================================================= */
 
 int semantic_analysis(struct node *program) {
     sem_errors = 0;
