@@ -34,6 +34,7 @@ static enum type string_to_type(const char *s) {
     if (strcmp(s, "boolean") == 0) return type_boolean;
     if (strcmp(s, "String[]") == 0) return type_string_array;
     if (strcmp(s, "void") == 0) return type_void;
+
     return type_undef;
 }
 
@@ -45,6 +46,7 @@ static int is_compatible(enum type from, enum type to) {
     if (from == type_undef || to == type_undef) return 0;
     if (from == to) return 1;
     if (from == type_int && to == type_double) return 1;
+
     return 0;
 }
 
@@ -57,6 +59,7 @@ static struct node *getchild(struct node *n, int index) {
     if (!n) return NULL;
     struct node_list *curr = n->children;
     for (int i = 0; i < index && curr; i++) curr = curr->next;
+
     return curr ? curr->node : NULL;
 }
 
@@ -243,7 +246,6 @@ static void build_global_table(struct node *program) {
             while ((pd = getchild(params_node, pidx++)) != NULL) {
                 struct node *pt = getchild(pd, 0);
                 struct node *pid = getchild(pd, 1);
-                
                 if (is_reserved_underscore(pid->token)) {
                     printf("Line %d, col %d: Symbol _ is reserved\n", pid->line, pid->col);
                     sem_errors++;
@@ -257,13 +259,11 @@ static void build_global_table(struct node *program) {
             if (is_reserved_underscore(id_node->token)) {
                 printf("Line %d, col %d: Symbol _ is reserved\n", id_node->line, id_node->col);
                 sem_errors++;
-                free_params(method_params);
-                member->type = type_undef; 
             } else if (find_method_by_sig(gtable->symbols, id_node->token, method_params)) {
                 char *sig = make_signature(id_node->token, method_params);
                 printf("Line %d, col %d: Symbol %s already defined\n", id_node->line, id_node->col, sig);
                 sem_errors++; free(sig); free_params(method_params);
-                member->type = type_undef; 
+                member->type = type_undef;
             } else {
                 symbol_entry *ms = add_symbol(&gtable->symbols, id_node->token, ret, 1, 0, id_node->line, id_node->col);
                 ms->params = method_params;
@@ -281,9 +281,7 @@ static void populate_method_tables(struct node *program) {
     int idx = 1;
     struct node *member;
     while ((member = getchild(program, idx++)) != NULL) {
-
         if (member->category != MethodDecl || member->type == type_undef) continue;
-        
         struct node *header = getchild(member, 0);
         struct node *type_node = getchild(header, 0);
         struct node *params_node = getchild(header, 2);
@@ -336,8 +334,7 @@ static void check_expression(struct node *expr, method_table *mt) {
 
     switch (expr->category) {
         case Natural: {
-            char *buf = malloc(strlen(expr->token) + 1); 
-            int j = 0;
+            char buf[1024]; int j = 0;
             for (int i = 0; expr->token[i] != '\0'; i++) if (expr->token[i] != '_') buf[j++] = expr->token[i];
             buf[j] = '\0';
             unsigned long long val = strtoull(buf, NULL, 10);
@@ -345,13 +342,11 @@ static void check_expression(struct node *expr, method_table *mt) {
                 printf("Line %d, col %d: Number %s out of bounds\n", expr->line, expr->col, expr->token);
                 sem_errors++;
             }
-            free(buf);
             expr->type = type_int;
             break;
         }
         case Decimal: {
-            char *buf = malloc(strlen(expr->token) + 1);
-            int j = 0;
+            char buf[1024]; int j = 0;
             for (int i = 0; expr->token[i] != '\0'; i++) if (expr->token[i] != '_') buf[j++] = expr->token[i];
             buf[j] = '\0';
             double val = strtod(buf, NULL);
@@ -368,7 +363,6 @@ static void check_expression(struct node *expr, method_table *mt) {
                 printf("Line %d, col %d: Number %s out of bounds\n", expr->line, expr->col, expr->token);
                 sem_errors++;
             }
-            free(buf);
             expr->type = type_double;
             break;
         }
@@ -390,7 +384,7 @@ static void check_expression(struct node *expr, method_table *mt) {
         }
         case Plus: case Minus: {
             struct node *operand = getchild(expr, 0);
-            if (operand->type == type_undef || !is_numeric(operand->type)) {
+            if (!is_numeric(operand->type)) {
                 printf("Line %d, col %d: Operator %s cannot be applied to type %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(operand->type));
                 sem_errors++; expr->type = type_undef;
             } else expr->type = operand->type;
@@ -407,9 +401,9 @@ static void check_expression(struct node *expr, method_table *mt) {
         }
         case Add: case Sub: case Mul: case Div: case Mod: {
             struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
-            if (l->type == type_undef || r->type == type_undef || !is_numeric(l->type) || !is_numeric(r->type)) {
+            if (!is_numeric(l->type) || !is_numeric(r->type)) {
                 printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
-                sem_errors++; expr->type = type_undef; 
+                sem_errors++; expr->type = type_undef;
             } else {
                 expr->type = (l->type == type_double || r->type == type_double) ? type_double : type_int;
             }
@@ -417,12 +411,11 @@ static void check_expression(struct node *expr, method_table *mt) {
         }
         case Xor: case Lshift: case Rshift: {
             struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
-            if (l->type == type_undef || r->type == type_undef || l->type != type_int || r->type != type_int) {
+            if (l->type != type_int || r->type != type_int) {
                 printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
-                sem_errors++; expr->type = type_undef; 
-            } else {
-                expr->type = type_int;
+                sem_errors++;
             }
+            expr->type = type_int;
             break;
         }
         case Lt: case Gt: case Le: case Ge: {
@@ -456,7 +449,6 @@ static void check_expression(struct node *expr, method_table *mt) {
         }
         case Assign: {
             struct node *l = getchild(expr, 0); struct node *r = getchild(expr, 1);
-
             if (!is_compatible(r->type, l->type) || l->type == type_string_array) {
                 printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n", expr->line, expr->col, type_to_string(l->type), type_to_string(r->type));
                 sem_errors++;
@@ -553,24 +545,22 @@ static void check_statement(struct node *stmt, method_table *mt) {
         case If: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
-            check_statement(getchild(stmt, 1), mt);
-            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
-
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in if statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
+            check_statement(getchild(stmt, 1), mt);
+            if (getchild(stmt, 2)) check_statement(getchild(stmt, 2), mt);
             break;
         }
         case While: {
             struct node *cond = getchild(stmt, 0);
             check_expression(cond, mt);
-            check_statement(getchild(stmt, 1), mt);
-
             if (cond->type != type_boolean) {
                 printf("Line %d, col %d: Incompatible type %s in while statement\n", cond->line, cond->col, type_to_string(cond->type));
                 sem_errors++;
             }
+            check_statement(getchild(stmt, 1), mt);
             break;
         }
         case Return: {
