@@ -412,11 +412,23 @@ static void check_expression(struct node *expr, method_table *mt) {
         case Xor: case Lshift: case Rshift: {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
-            if (l->type != type_int || r->type != type_int) {
-                printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
-                sem_errors++;
+            if (expr->category == Xor) {
+                int both_int  = (l->type == type_int     && r->type == type_int);
+                int both_bool = (l->type == type_boolean && r->type == type_boolean);
+                if (!both_int && !both_bool) {
+                    printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
+                    sem_errors++;
+                    expr->type = type_undef;
+                } else {
+                    expr->type = both_bool ? type_boolean : type_int;
+                }
+            } else {
+                if (l->type != type_int || r->type != type_int) {
+                    printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n", expr->line, expr->col, get_op_string(expr->category), type_to_string(l->type), type_to_string(r->type));
+                    sem_errors++;
+                }
+                expr->type = type_int;
             }
-            expr->type = type_int;
             break;
         }
         case Lt: case Gt: case Le: case Ge: {

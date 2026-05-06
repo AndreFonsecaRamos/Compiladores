@@ -11,10 +11,24 @@ RESET="\033[0m"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Atualiza aqui se a tua pasta do compilador tiver outro nome (ex: lexer_yacc)
+# Atualiza aqui se a tua pasta do compilador tiver outro nome
 COMPILER_DIR="$PROJECT_DIR/src/lexer_&_yacc" 
 TESTS_DIR="$PROJECT_DIR/src/tests/final"
 EXE="$COMPILER_DIR/jucompiler"
+
+# Descobrir qual o comando lli disponível no sistema
+LLI_CMD=""
+if command -v lli >/dev/null 2>&1; then
+    LLI_CMD="lli"
+elif command -v lli-3.9 >/dev/null 2>&1; then
+    LLI_CMD="lli-3.9"
+elif command -v lli-10 >/dev/null 2>&1; then
+    LLI_CMD="lli-10"
+else
+    echo -e "${RED}Erro fatal: O interpretador 'lli' não está instalado no sistema.${RESET}"
+    echo -e "${YELLOW}Instala-o correndo: sudo apt-get install llvm${RESET}"
+    exit 1
+fi
 
 # Contadores
 total=0
@@ -37,6 +51,7 @@ if [ ! -f "$EXE" ]; then
 fi
 
 echo -e "${GREEN}Compilador pronto: $EXE${RESET}"
+echo -e "${GREEN}LLVM VM pronta: $LLI_CMD${RESET}"
 echo ""
 
 # Verificar se existem testes
@@ -62,6 +77,7 @@ for java_file in $JAVA_FILES; do
     base_name=$(basename "$java_file" .java)
     dir_name=$(dirname "$java_file")
     out_file="$dir_name/$base_name.out"
+    ll_file="$dir_name/$base_name.ll"
 
     total=$((total + 1))
 
@@ -74,16 +90,24 @@ for java_file in $JAVA_FILES; do
         continue
     fi
 
-    # Flag rigorosa para a Meta 4 
-    flag="-s"
+    # PASSO 1: Compilar de .java para .ll (Sem flags)
+    "$EXE" < "$java_file" > "$ll_file" 2>/dev/null
 
-    # Executar o compilador e capturar output
-    actual=$("$EXE" $flag < "$java_file" 2>&1)
+    if [ ! -s "$ll_file" ]; then
+        echo -e "${RED}FAILED ✗ (Nenhum código LLVM gerado)${RESET}"
+        failed=$((failed + 1))
+        continue
+    fi
+
+    # PASSO 2: Executar o LLVM IR gerado para obter o output real do programa
+    # (Se o teste precisar de argumentos, terás de os passar no LLI_CMD aqui. 
+    # Para o teste genérico, corre sem argumentos extra.)
+    actual=$($LLI_CMD "$ll_file" 2>&1)
 
     # Normalizar line endings: remover \r do expected
     expected=$(tr -d '\r' < "$out_file")
 
-    # Comparar
+    # PASSO 3: Comparar Output
     if [ "$actual" = "$expected" ]; then
         echo -e "${GREEN}PASSED ✓${RESET}"
         passed=$((passed + 1))
@@ -92,7 +116,7 @@ for java_file in $JAVA_FILES; do
         failed=$((failed + 1))
 
         # Mostrar diferenças
-        echo -e "${YELLOW}  Diferenças (< obtido, > esperado):${RESET}"
+        echo -e "${YELLOW}  Diferenças (< obtido pela VM, > esperado):${RESET}"
         diff_output=$(diff <(echo "$actual") <(echo "$expected"))
         echo "$diff_output" | head -40 | while IFS= read -r diff_line; do
             echo "    $diff_line"
@@ -106,7 +130,7 @@ for java_file in $JAVA_FILES; do
         # Guardar output para debug
         actual_file="$dir_name/$base_name.actual"
         echo "$actual" > "$actual_file"
-        echo -e "${YELLOW}  Output: $actual_file${RESET}"
+        echo -e "${YELLOW}  Output guardado em: $actual_file${RESET}"
     fi
 done
 
