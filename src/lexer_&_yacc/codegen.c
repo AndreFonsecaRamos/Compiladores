@@ -101,7 +101,7 @@ static symbol_entry *find_symbol(symbol_entry *list, const char *name) {
 }
 
 char* get_var_ptr(const char *name) {
-    char *buf = malloc(256);
+    char *buf = malloc(strlen(name) + 64);
 
     symbol_entry *s = find_symbol(current_mt->symbols, name);
     if (s && !s->is_method) {
@@ -264,18 +264,23 @@ int codegen_expression(struct node *expr) {
         case Call: {
             struct node *id_node = getchild(expr, 0);
             int num_args = countchildren(expr) - 1;
-            int arg_regs[128];
-            enum type arg_types[128];
             
-            for (int i = 0; i < num_args; i++) {
-                struct node *arg = getchild(expr, i + 1);
-                arg_regs[i] = codegen_expression(arg);
-                arg_types[i] = arg->type;
+            int *arg_regs = NULL;
+            enum type *arg_types = NULL;
+            char *call_args = NULL;
+
+            if (num_args > 0) {
+                arg_regs = malloc(num_args * sizeof(int));
+                arg_types = malloc(num_args * sizeof(enum type));
+                for (int i = 0; i < num_args; i++) {
+                    struct node *arg = getchild(expr, i + 1);
+                    arg_regs[i] = codegen_expression(arg);
+                    arg_types[i] = arg->type;
+                }
             }
             
             symbol_entry *target_method = NULL;
             if (gtable && gtable->symbols) {
-
                 for (symbol_entry *sym = gtable->symbols; sym; sym = sym->next) {
                     if (!sym->is_method || strcmp(sym->name, id_node->token) != 0) continue;
                     int is_exact = 1, p_count = 0;
@@ -316,22 +321,31 @@ int codegen_expression(struct node *expr) {
                 }
             }
 
-            char call_args[1024] = "";
+            /* 128 bytes por argumento é infinitamente seguro */
+            int call_args_len = num_args * 128 + 1;
+            call_args = malloc(call_args_len);
+            call_args[0] = '\0';
             for (int i = 0; i < num_args; i++) {
-                char buf[64];
+                char buf[128];
                 sprintf(buf, "%s %%%d", get_llvm_type(arg_types[i]), arg_regs[i]);
                 strcat(call_args, buf);
                 if (i < num_args - 1) strcat(call_args, ", ");
             }
             
+            int ret_val = -1;
             const char *ret_t = get_llvm_type(expr->type);
             if (expr->type == type_void) {
                 printf("  call void @%s(%s)\n", id_node->token, call_args);
-                return -1;
             } else {
                 printf("  %%%d = call %s @%s(%s)\n", temporary, ret_t, id_node->token, call_args);
-                return temporary++;
+                ret_val = temporary++;
             }
+
+            if (arg_regs) free(arg_regs);
+            if (arg_types) free(arg_types);
+            if (call_args) free(call_args);
+
+            return ret_val;
         }
         default:
             break;
@@ -531,7 +545,8 @@ void codegen_program(struct node *program) {
     printf("@.str.false = private unnamed_addr constant [6 x i8] c\"false\\00\"\n");
     
     for (str_entry *curr = str_list; curr; curr = curr->next) {
-        char c_str[4096] = "";
+        char *c_str = malloc(strlen(curr->token) * 4 + 1);
+        c_str[0] = '\0';
         for(int i=1; curr->token[i] != '"'; i++) {
             if (curr->token[i] == '\\' && curr->token[i+1] == 'n') { strcat(c_str, "\\0A"); i++; }
             else if (curr->token[i] == '\\' && curr->token[i+1] == 'f') { strcat(c_str, "\\0C"); i++; }
@@ -542,6 +557,7 @@ void codegen_program(struct node *program) {
             else { char tmp[2] = {curr->token[i], '\0'}; strcat(c_str, tmp); }
         }
         printf("@.str.%d = private unnamed_addr constant [%d x i8] c\"%s\\00\"\n", curr->id, curr->length, c_str);
+        free(c_str);
     }
     printf("\n");
 
