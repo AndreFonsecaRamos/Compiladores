@@ -14,8 +14,8 @@ TESTS_FINAL_DIR = ../tests/final
 
 all: $(TARGET)
 
-$(TARGET): y.tab.c lex.yy.c ast.c semantics.c
-	$(CC) $(CFLAGS) y.tab.c lex.yy.c ast.c semantics.c -o $(TARGET)
+$(TARGET): y.tab.c lex.yy.c ast.c semantics.c codegen.c
+	$(CC) $(CFLAGS) y.tab.c lex.yy.c ast.c semantics.c codegen.c -o $(TARGET)
 
 y.tab.c y.tab.h: jucompiler.y
 	$(YACC) -d jucompiler.y

@@ -1,9 +1,11 @@
+/* João Francisco - 2023228417 */
+/* André Ramos - 2023227306 */
+
 #ifndef CODEGEN_H
 #define CODEGEN_H
 
 #include "ast.h"
-#include "semantics.h"
 
-void generate_code(struct node *program);
+void codegen_program(struct node *program);
 
 #endif

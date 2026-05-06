@@ -7,6 +7,7 @@
 #include <string.h>
 #include "ast.h"
 #include "semantics.h"
+#include "codegen.h"
 
 int yylex(void);
 void yyerror(char *s);
@@ -489,43 +490,59 @@ Expr1:
 %%
 
 int main(int argc, char *argv[]) {
+    int no_flags = 1;
+    int run_semantics = 0;
 
-    for (int i = 1; i < argc; i++){
-        if (strcmp(argv[i], "-l") == 0){
-            flag_l = 1;
-            print_tokens = 1;
-        } 
-        else if (strcmp(argv[i], "-e1") == 0){
-            flag_e1 = 1;
-            print_tokens = 0;
-        }
-        else if (strcmp(argv[i], "-t") == 0){
-            flag_t = 1;
-        }
-        else if (strcmp(argv[i], "-s") == 0){
-            flag_s = 1;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-l") == 0) {
+            flag_l = 1; print_tokens = 1; no_flags = 0;
+
+        } else if (strcmp(argv[i], "-e1") == 0) {
+            flag_e1 = 1; print_tokens = 0; no_flags = 0;
+
+        } else if (strcmp(argv[i], "-e") == 0 && i + 1 < argc && strcmp(argv[i+1], "1") == 0) {
+            flag_e1 = 1; print_tokens = 0; no_flags = 0; i++;
+
+        } else if (strcmp(argv[i], "-e2") == 0) {
+            no_flags = 0;
+
+        } else if (strcmp(argv[i], "-e") == 0 && i + 1 < argc && strcmp(argv[i+1], "2") == 0) {
+            no_flags = 0; i++;
+
+        } else if (strcmp(argv[i], "-t") == 0) {
+            flag_t = 1; no_flags = 0;
+
+        } else if (strcmp(argv[i], "-s") == 0) {
+            flag_s = 1; run_semantics = 1; no_flags = 0;
+
+        } else if (strcmp(argv[i], "-e3") == 0) {
+            run_semantics = 1; no_flags = 0;
+
+        } else if (strcmp(argv[i], "-e") == 0 && i + 1 < argc && strcmp(argv[i+1], "3") == 0) {
+            run_semantics = 1; no_flags = 0; i++;
         }
     }
     
-    if (flag_l || flag_e1){
+    if (no_flags) {
+        run_semantics = 1;
+    }
+    
+    if (flag_l || flag_e1) {
         while(yylex());
     } 
     else {
         yyparse();
         if (num_errors == 0) {
-            int run_semantics = 0;
-            for (int i = 1; i < argc; i++) {
-                if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "-e3") == 0) {
-                            run_semantics = 1;
-                }
-            }
-
             if (run_semantics) {
-                semantic_analysis(ast_root);
+                int semantic_errors_count = semantic_analysis(ast_root);
+                
                 if (flag_s) {
                     print_tables();
                     printf("\n"); 
                     show_annotated(ast_root, 0);
+                } 
+                else if (no_flags && semantic_errors_count == 0) {
+                    codegen_program(ast_root);
                 }
             } else if (flag_t) {
                 print_ast(ast_root, 0);
