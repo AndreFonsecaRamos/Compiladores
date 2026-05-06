@@ -100,9 +100,6 @@ static symbol_entry *find_symbol(symbol_entry *list, const char *name) {
     return NULL;
 }
 
-/* Return the LLVM pointer for 'name' given the expected type.
-   Checks the local method table first, but only uses it when the type matches
-   (handles cases where a local variable shadows a global with a different type). */
 char* get_var_ptr(const char *name, enum type expected) {
     char *buf = malloc(strlen(name) + 64);
     if (current_mt) {
@@ -125,9 +122,6 @@ static char *strip_underscores(const char *s) {
     return r;
 }
 
-/* Fix LLVM double literal format:
-   - ".5" → "0.5" (leading dot)
-   - "123e-10" → "123.0e-10" (exponent without dot) */
 static char *fix_decimal_format(const char *s) {
     if (s[0] == '.') {
         char *r = malloc(strlen(s) + 2);
@@ -180,7 +174,6 @@ static const char *llvm_type_mangle(enum type t) {
     }
 }
 
-/* Returns a malloc'd mangled function name. Only mangles when there are overloads. */
 static char *mangle_name(const char *name, param_entry *params) {
     if (!gtable || count_methods_with_name(name) <= 1) return strdup(name);
     char buf[4096];
@@ -194,7 +187,6 @@ static char *mangle_name(const char *name, param_entry *params) {
     return strdup(buf);
 }
 
-/* Same but from AST params_node */
 static char *mangle_name_from_ast(const char *name, struct node *params_node) {
     if (!gtable || count_methods_with_name(name) <= 1) return strdup(name);
     param_entry *plist = NULL;
@@ -418,7 +410,7 @@ int codegen_expression(struct node *expr) {
 
             int *arg_regs = NULL;
             enum type *arg_types = NULL;
-            int *arg_len_regs = NULL; /* for String[] args: holds length register */
+            int *arg_len_regs = NULL; 
 
             if (num_args > 0) {
                 arg_regs = malloc(num_args * sizeof(int));
@@ -429,7 +421,7 @@ int codegen_expression(struct node *expr) {
                     arg_regs[i] = codegen_expression(arg);
                     arg_types[i] = arg->type;
                     arg_len_regs[i] = -1;
-                    /* If String[], also load its length for the extra parameter. */
+
                     if (arg->type == type_string_array && arg->category == Id) {
                         printf("  %%%d = load i32, i32* %%%s_length\n", temporary, arg->token);
                         arg_len_regs[i] = temporary++;
@@ -477,7 +469,6 @@ int codegen_expression(struct node *expr) {
                 }
             }
 
-            /* Build call_args string; String[] args also pass length. */
             int call_args_len = num_args * 256 + 1;
             char *call_args = malloc(call_args_len);
             call_args[0] = '\0';
@@ -492,7 +483,6 @@ int codegen_expression(struct node *expr) {
                 }
             }
 
-            /* Get possibly-mangled function name. */
             char *fn_name = target_method
                 ? mangle_name(id_node->token, target_method->params)
                 : strdup(id_node->token);
@@ -533,7 +523,7 @@ static void codegen_statement(struct node *stmt) {
             if (child->category == StrLit) {
                 int id = get_string_id(child->token);
                 int len = get_string_length(child->token);
-                /* Use printf("%s", str) so '%' chars in the string are not treated as format specifiers. */
+
                 printf("  %%%d = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([%d x i8], [%d x i8]* @.str.%d, i32 0, i32 0))\n", temporary++, len, len, id);
             } else {
                 int reg = codegen_expression(child);
@@ -614,8 +604,7 @@ static void codegen_statement(struct node *stmt) {
             } else {
                 printf("  ret void\n");
             }
-            /* Start a dead basic block so any subsequent br from If/While/function-end
-               doesn't create a second terminator in the same block. */
+
             printf("Ldead%d:\n", label_counter++);
             break;
         }
@@ -634,13 +623,12 @@ void codegen_parameters(struct node *params_node) {
         struct node *id_node = getchild(param, 1);
         enum type t = category_to_type(type_node->category);
         printf("%s %%arg_%s", get_llvm_type(t), id_node->token);
-        /* Non-main String[] also carries its length as an extra i32. */
+
         if (t == type_string_array)
             printf(", i32 %%arg_%s_len", id_node->token);
     }
 }
 
-/* Build signature string "name(type1,type2,...)" from AST params node. Caller must free. */
 static char *build_sig_from_ast(const char *name, struct node *params_node) {
     char buf[4096];
     strcpy(buf, name);
@@ -667,7 +655,6 @@ void codegen_method(struct node *method) {
     struct node *params_node = getchild(header, 2);
     enum type ret_type = category_to_type(type_node->category);
 
-    /* Find the matching method_table by signature (handles overloads). */
     char *sig = build_sig_from_ast(id_node->token, params_node);
     method_table *mt = gtable->methods;
     while (mt) {
@@ -676,7 +663,6 @@ void codegen_method(struct node *method) {
     }
     free(sig);
 
-    /* Detect main entry point: name "main" with a String[] formal parameter. */
     int is_main_entry = 0;
     struct node *first_param = getchild(params_node, 0);
     if (strcmp(id_node->token, "main") == 0 && first_param != NULL) {
@@ -689,11 +675,11 @@ void codegen_method(struct node *method) {
         struct node *args_id = getchild(first_param, 1);
         const char *args_name = args_id->token;
         printf("define i32 @main(i32 %%argc, i8** %%argv) {\n");
-        /* Java args[0] == C argv[1]: skip argv[0] (program name). */
+
         printf("  %%args_base = getelementptr inbounds i8*, i8** %%argv, i32 1\n");
         printf("  %%%s = alloca i8**\n", args_name);
         printf("  store i8** %%args_base, i8*** %%%s\n", args_name);
-        /* args.length == argc - 1 (excluding program name). */
+
         printf("  %%args_len_val = sub i32 %%argc, 1\n");
         printf("  %%%s_length = alloca i32\n", args_name);
         printf("  store i32 %%args_len_val, i32* %%%s_length\n", args_name);
@@ -713,14 +699,13 @@ void codegen_method(struct node *method) {
             printf("  %%%s = alloca %s\n", i_node->token, llvm_t);
             printf("  store %s %%arg_%s, %s* %%%s\n", llvm_t, i_node->token, llvm_t, i_node->token);
             if (pt == type_string_array) {
-                /* Also store the passed length so args.length (Length node) works. */
+
                 printf("  %%%s_length = alloca i32\n", i_node->token);
                 printf("  store i32 %%arg_%s_len, i32* %%%s_length\n", i_node->token, i_node->token);
             }
         }
     }
 
-    /* Pass 1: emit all alloca instructions in the entry block so they dominate all uses. */
     int bidx = 0; struct node *stmt_or_var;
     while ((stmt_or_var = getchild(body, bidx++)) != NULL) {
         if (stmt_or_var->category == VarDecl) {
@@ -729,7 +714,6 @@ void codegen_method(struct node *method) {
             printf("  %%%s = alloca %s\n", i_node->token, get_llvm_type(category_to_type(t_node->category)));
         }
     }
-    /* Pass 2: emit statements (VarDecls produce no code beyond the alloca). */
     bidx = 0;
     while ((stmt_or_var = getchild(body, bidx++)) != NULL) {
         if (stmt_or_var->category != VarDecl)
