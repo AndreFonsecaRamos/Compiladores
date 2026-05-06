@@ -26,7 +26,7 @@ struct node *newnode(enum category category, char *token) {
 }
 
 void addchild(struct node *parent, struct node *child) {
-    if (parent == NULL || child == NULL) return;
+    if(parent == NULL || child == NULL) return;
 
     struct node_list *new = malloc(sizeof(struct node_list));
     new->node = child;
@@ -41,10 +41,11 @@ void addchild(struct node *parent, struct node *child) {
     while(current->next != NULL) {
         current = current->next;
     }
+
     current->next = new;
 }
 
-struct node *create_block_node(struct node *statement_list) {
+struct node *create_block_node(struct node *statement_list){
     if (statement_list == NULL) {
         return NULL;
     }
@@ -58,8 +59,10 @@ struct node *create_block_node(struct node *statement_list) {
     
     if (children_list->next == NULL) {
         struct node *single = children_list->node;
+
         free(children_list);
         free(statement_list);
+
         return single;
     }
     
@@ -68,7 +71,8 @@ struct node *create_block_node(struct node *statement_list) {
 }
 
 void print_ast(struct node *current, int depth) {
-    if (current == NULL) return;
+
+    if(current == NULL) return;
 
     for (int i = 0; i < depth; i++) {
         printf("..");
@@ -81,8 +85,10 @@ void print_ast(struct node *current, int depth) {
     }
 
     struct node_list *child_item = current->children;
+
     while (child_item != NULL) {
         print_ast(child_item->node, depth + 1);
+
         child_item = child_item->next;
     }
 }

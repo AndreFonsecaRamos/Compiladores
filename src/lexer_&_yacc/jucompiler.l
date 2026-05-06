@@ -15,7 +15,7 @@ int line = 1;
 int col = 1;
 int token_line, token_col;
 
-/* Buffer dinâmico para strings e erros */
+/* Buffer para strings e erros */
 char *buffer_string = NULL;
 int buffer_capacity = 0;
 char *error_token = NULL; 

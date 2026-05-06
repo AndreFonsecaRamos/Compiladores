@@ -226,7 +226,9 @@ MethodBodyContent:
     | MethodBodyContent Statement {
         if ($1 == NULL) $$ = newnode(Program, NULL); 
         else $$ = $1;
-        if ($2 != NULL) addchild($$, $2); 
+        if($2 != NULL){
+            addchild($$, $2); 
+        } 
     }
     | MethodBodyContent VarDecl {
         if ($1 == NULL) $$ = newnode(Program, NULL); 
