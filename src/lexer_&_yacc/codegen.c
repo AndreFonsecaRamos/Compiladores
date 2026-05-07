@@ -13,6 +13,8 @@ int label_counter;
 int str_counter;
 static int main_generated = 0;
 static int in_main_entry = 0;
+static int ao_alloca_base = 0;
+static int ao_alloca_next = 0;
 
 extern class_table *gtable;
 method_table *current_mt = NULL;
@@ -212,6 +214,14 @@ int cast_to_double(int reg, enum type t) {
 
 static void codegen_statement(struct node *stmt);
 
+static int count_and_or(struct node *n) {
+    if (!n) return 0;
+    int count = (n->category == And || n->category == Or) ? 1 : 0;
+    struct node_list *curr = n->children;
+    while (curr) { count += count_and_or(curr->node); curr = curr->next; }
+    return count;
+}
+
 int codegen_expression(struct node *expr) {
     if (!expr) return -1;
     
@@ -332,8 +342,7 @@ int codegen_expression(struct node *expr) {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
             int n = label_counter++;
-            int res_reg = temporary++;
-            printf("  %%%d = alloca i1\n", res_reg);
+            int res_reg = ao_alloca_base + ao_alloca_next++;
             int rl = codegen_expression(l);
             printf("  br i1 %%%d, label %%Lor_short_%d, label %%Lor_eval_%d\n", rl, n, n);
             printf("Lor_eval_%d:\n", n);
@@ -352,8 +361,7 @@ int codegen_expression(struct node *expr) {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
             int n = label_counter++;
-            int res_reg = temporary++;
-            printf("  %%%d = alloca i1\n", res_reg);
+            int res_reg = ao_alloca_base + ao_alloca_next++;
             int rl = codegen_expression(l);
             printf("  br i1 %%%d, label %%Land_eval_%d, label %%Land_short_%d\n", rl, n, n);
             printf("Land_eval_%d:\n", n);
@@ -728,6 +736,13 @@ void codegen_method(struct node *method) {
             printf("  %%%s = alloca %s\n", i_node->token, get_llvm_type(category_to_type(t_node->category)));
         }
     }
+
+    ao_alloca_base = temporary;
+    ao_alloca_next = 0;
+    int ao_count = count_and_or(body);
+    for (int i = 0; i < ao_count; i++)
+        printf("  %%%d = alloca i1\n", temporary++);
+
     bidx = 0;
     while ((stmt_or_var = getchild(body, bidx++)) != NULL) {
         if (stmt_or_var->category != VarDecl)

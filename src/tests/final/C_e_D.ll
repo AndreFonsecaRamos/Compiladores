@@ -37,60 +37,60 @@ define i32 @main(i32 %argc, i8** %argv) {
   %i2 = alloca i32
   %i3 = alloca i32
   %d = alloca double
-  %1 = add i32 0, 2
-  store i32 %1, i32* %a
-  %2 = load i32, i32* %a
-  %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %2)
-  %4 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %5 = add i32 0, 0
-  %6 = add i32 0, 3
-  %7 = add i32 %5, %6
-  store i32 %7, i32* %a
-  %8 = sitofp i32 %7 to double
-  store double %8, double* %d
-  %9 = load i32, i32* %a
-  %10 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %9)
-  %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %12 = load double, double* %d
-  %13 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.double, i32 0, i32 0), double %12)
-  %14 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %15 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.3, i32 0, i32 0))
+  %1 = alloca i1
+  %2 = alloca i1
+  %3 = add i32 0, 2
+  store i32 %3, i32* %a
+  %4 = load i32, i32* %a
+  %5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %4)
+  %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
+  %7 = add i32 0, 0
+  %8 = add i32 0, 3
+  %9 = add i32 %7, %8
+  store i32 %9, i32* %a
+  %10 = sitofp i32 %9 to double
+  store double %10, double* %d
+  %11 = load i32, i32* %a
+  %12 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %11)
+  %13 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
+  %14 = load double, double* %d
+  %15 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.double, i32 0, i32 0), double %14)
   %16 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %17 = alloca i1
-  %18 = load i32, i32* %a
-  %19 = add i32 0, 1
-  %20 = add i32 %18, %19
-  store i32 %20, i32* %a
-  %21 = add i32 0, 0
-  %22 = icmp sgt i32 %20, %21
-  br i1 %22, label %Lor_short_0, label %Lor_eval_0
+  %17 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.3, i32 0, i32 0))
+  %18 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
+  %19 = load i32, i32* %a
+  %20 = add i32 0, 1
+  %21 = add i32 %19, %20
+  store i32 %21, i32* %a
+  %22 = add i32 0, 0
+  %23 = icmp sgt i32 %21, %22
+  br i1 %23, label %Lor_short_0, label %Lor_eval_0
 Lor_eval_0:
-  %23 = load i32, i32* %a
-  %24 = add i32 0, 3
-  %25 = add i32 %23, %24
-  store i32 %25, i32* %a
-  %26 = add i32 0, 0
-  %27 = icmp sgt i32 %25, %26
-  store i1 %27, i1* %17
+  %24 = load i32, i32* %a
+  %25 = add i32 0, 3
+  %26 = add i32 %24, %25
+  store i32 %26, i32* %a
+  %27 = add i32 0, 0
+  %28 = icmp sgt i32 %26, %27
+  store i1 %28, i1* %1
   br label %Lor_end_0
 Lor_short_0:
-  store i1 1, i1* %17
+  store i1 1, i1* %1
   br label %Lor_end_0
 Lor_end_0:
-  %28 = load i1, i1* %17
-  br i1 %28, label %L1, label %L2
+  %29 = load i1, i1* %1
+  br i1 %29, label %L1, label %L2
 L1:
-  %29 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.true, i32 0, i32 0))
+  %30 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.true, i32 0, i32 0))
   br label %L3
 L2:
-  %30 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.false, i32 0, i32 0))
+  %31 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.false, i32 0, i32 0))
   br label %L3
 L3:
-  %31 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %32 = load i32, i32* %a
-  %33 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %32)
-  %34 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
-  %35 = alloca i1
+  %32 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
+  %33 = load i32, i32* %a
+  %34 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.int, i32 0, i32 0), i32 %33)
+  %35 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
   %36 = load i32, i32* %a
   %37 = add i32 0, 1
   %38 = add i32 %36, %37
@@ -105,13 +105,13 @@ Land_eval_4:
   store i32 %43, i32* %a
   %44 = add i32 0, 0
   %45 = icmp slt i32 %43, %44
-  store i1 %45, i1* %35
+  store i1 %45, i1* %2
   br label %Land_end_4
 Land_short_4:
-  store i1 0, i1* %35
+  store i1 0, i1* %2
   br label %Land_end_4
 Land_end_4:
-  %46 = load i1, i1* %35
+  %46 = load i1, i1* %2
   br i1 %46, label %L5, label %L6
 L5:
   %47 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str.true, i32 0, i32 0))
