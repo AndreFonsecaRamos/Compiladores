@@ -12,6 +12,7 @@ int temporary;
 int label_counter;
 int str_counter;
 static int main_generated = 0;
+static int in_main_entry = 0;
 
 extern class_table *gtable;
 method_table *current_mt = NULL;
@@ -596,14 +597,24 @@ static void codegen_statement(struct node *stmt) {
             struct node *ret_expr = getchild(stmt, 0);
             if (ret_expr) {
                 int r_reg = codegen_expression(ret_expr);
-                symbol_entry *ret_sym = find_symbol(current_mt->symbols, "return");
-                enum type expected = string_to_type(ret_sym->type_str);
-                if (expected == type_double && ret_expr->type == type_int) {
-                    r_reg = cast_to_double(r_reg, ret_expr->type);
+                if (in_main_entry) {
+                    if (ret_expr->type == type_int)
+                        printf("  ret i32 %%%d\n", r_reg);
+                    else
+                        printf("  ret i32 0\n");
+                } else {
+                    symbol_entry *ret_sym = current_mt ? find_symbol(current_mt->symbols, "return") : NULL;
+                    enum type expected = ret_sym ? string_to_type(ret_sym->type_str) : ret_expr->type;
+                    if (expected == type_double && ret_expr->type == type_int) {
+                        r_reg = cast_to_double(r_reg, ret_expr->type);
+                    }
+                    printf("  ret %s %%%d\n", get_llvm_type(expected), r_reg);
                 }
-                printf("  ret %s %%%d\n", get_llvm_type(expected), r_reg);
             } else {
-                printf("  ret void\n");
+                if (in_main_entry)
+                    printf("  ret i32 0\n");
+                else
+                    printf("  ret void\n");
             }
 
             printf("Ldead%d:\n", label_counter++);
@@ -674,6 +685,7 @@ void codegen_method(struct node *method) {
 
     if (is_main_entry) {
         main_generated = 1;
+        in_main_entry = 1;
         struct node *args_id = getchild(first_param, 1);
         const char *args_name = args_id->token;
         printf("define i32 @main(i32 %%argc, i8** %%argv) {\n");
@@ -728,6 +740,7 @@ void codegen_method(struct node *method) {
     else if (ret_type == type_boolean) printf("  ret i1 0\n");
     else printf("  ret i32 0\n");
 
+    in_main_entry = 0;
     printf("}\n\n");
 }
 
