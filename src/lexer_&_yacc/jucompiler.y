@@ -536,12 +536,12 @@ int main(int argc, char *argv[]) {
             if (run_semantics) {
                 int semantic_errors_count = semantic_analysis(ast_root);
                 
-                if (flag_s) {
+                if(flag_s){
                     print_tables();
                     printf("\n"); 
                     show_annotated(ast_root, 0);
                 } 
-                else if (no_flags && semantic_errors_count == 0) {
+                else if(no_flags && semantic_errors_count == 0){
                     codegen_program(ast_root);
                 }
             } else if (flag_t) {

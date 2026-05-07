@@ -8,9 +8,10 @@
 #include "semantics.h"
 #include "codegen.h"
 
-int temporary;     
-int label_counter; 
-int str_counter;   
+int temporary;
+int label_counter;
+int str_counter;
+static int main_generated = 0;
 
 extern class_table *gtable;
 method_table *current_mt = NULL;
@@ -672,6 +673,7 @@ void codegen_method(struct node *method) {
     }
 
     if (is_main_entry) {
+        main_generated = 1;
         struct node *args_id = getchild(first_param, 1);
         const char *args_name = args_id->token;
         printf("define i32 @main(i32 %%argc, i8** %%argv) {\n");
@@ -792,5 +794,9 @@ void codegen_program(struct node *program) {
         if (member->category == MethodDecl && member->type != type_undef) {
             codegen_method(member);
         }
+    }
+
+    if (!main_generated) {
+        printf("define i32 @main(i32 %%argc, i8** %%argv) {\nentry:\n  ret i32 0\n}\n");
     }
 }

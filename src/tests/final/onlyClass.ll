@@ -8,3 +8,7 @@ declare i32 @atoi(i8*)
 @.str.false = private unnamed_addr constant [6 x i8] c"false\00"
 
 
+define i32 @main(i32 %argc, i8** %argv) {
+entry:
+  ret i32 0
+}

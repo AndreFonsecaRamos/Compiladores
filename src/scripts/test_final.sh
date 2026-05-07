@@ -100,9 +100,14 @@ for java_file in $JAVA_FILES; do
     fi
 
     # PASSO 2: Executar o LLVM IR gerado para obter o output real do programa
-    # (Se o teste precisar de argumentos, terás de os passar no LLI_CMD aqui. 
-    # Para o teste genérico, corre sem argumentos extra.)
-    actual=$($LLI_CMD "$ll_file" 2>&1)
+    # Se existir um .in com argumentos, passá-los ao lli
+    in_file="$dir_name/$base_name.in"
+    if [ -f "$in_file" ]; then
+        in_args=$(cat "$in_file")
+        actual=$($LLI_CMD "$ll_file" $in_args 2>&1 | tr -d '\r')
+    else
+        actual=$($LLI_CMD "$ll_file" 2>&1 | tr -d '\r')
+    fi
 
     # Normalizar line endings: remover \r do expected
     expected=$(tr -d '\r' < "$out_file")
