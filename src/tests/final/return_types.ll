@@ -17,12 +17,12 @@ declare i32 @atoi(i8*)
 
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %uncommon_name = alloca i8**
-  store i8** %args_base, i8*** %uncommon_name
-  %args_len_val = sub i32 %argc, 1
-  %uncommon_name_length = alloca i32
-  store i32 %args_len_val, i32* %uncommon_name_length
+  store i8** %.args_base, i8*** %uncommon_name
+  %.args_len_val = sub i32 %argc, 1
+  %.uncommon_name_length = alloca i32
+  store i32 %.args_len_val, i32* %.uncommon_name_length
   %d = alloca double
   %1 = call double @fun_double()
   store double %1, double* %d
@@ -51,14 +51,14 @@ define i32 @main(i32 %argc, i8** %argv) {
   %20 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.double, i32 0, i32 0), double %19)
   %21 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
   %22 = load i8**, i8*** %uncommon_name
-  %23 = load i32, i32* %uncommon_name_length
+  %23 = load i32, i32* %.uncommon_name_length
   %24 = call double @fun_double_from_args(i8** %22, i32 %23)
   store double %24, double* %d
   %25 = load double, double* %d
   %26 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([6 x i8], [6 x i8]* @.str.double, i32 0, i32 0), double %25)
   %27 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.0, i32 0, i32 0))
   %28 = load i8**, i8*** %uncommon_name
-  %29 = load i32, i32* %uncommon_name_length
+  %29 = load i32, i32* %.uncommon_name_length
   %30 = call double @fun_double_from_unary_plus(i8** %28, i32 %29)
   store double %30, double* %d
   %31 = load double, double* %d
@@ -116,23 +116,23 @@ Ldead4:
   ret double 0.0
 }
 
-define double @fun_double_from_args(i8** %arg_str_arr, i32 %arg_str_arr_len) {
+define double @fun_double_from_args(i8** %.arg_str_arr, i32 %.arg_str_arr_len) {
   %str_arr = alloca i8**
-  store i8** %arg_str_arr, i8*** %str_arr
-  %str_arr_length = alloca i32
-  store i32 %arg_str_arr_len, i32* %str_arr_length
-  %1 = load i32, i32* %str_arr_length
+  store i8** %.arg_str_arr, i8*** %str_arr
+  %.str_arr_length = alloca i32
+  store i32 %.arg_str_arr_len, i32* %.str_arr_length
+  %1 = load i32, i32* %.str_arr_length
   %2 = sitofp i32 %1 to double
   ret double %2
 Ldead5:
   ret double 0.0
 }
 
-define double @fun_double_from_unary_plus(i8** %arg_str_arr, i32 %arg_str_arr_len) {
+define double @fun_double_from_unary_plus(i8** %.arg_str_arr, i32 %.arg_str_arr_len) {
   %str_arr = alloca i8**
-  store i8** %arg_str_arr, i8*** %str_arr
-  %str_arr_length = alloca i32
-  store i32 %arg_str_arr_len, i32* %str_arr_length
+  store i8** %.arg_str_arr, i8*** %str_arr
+  %.str_arr_length = alloca i32
+  store i32 %.arg_str_arr_len, i32* %.str_arr_length
   %1 = add i32 0, 1
   %2 = sitofp i32 %1 to double
   ret double %2

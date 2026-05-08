@@ -11,9 +11,9 @@ declare i32 @atoi(i8*)
 
 @d = global double 0.0
 
-define double @test(double %arg_n) {
+define double @test(double %.arg_n) {
   %n = alloca double
-  store double %arg_n, double* %n
+  store double %.arg_n, double* %n
   %1 = load double, double* %n
   ret double %1
 Ldead0:
@@ -21,12 +21,12 @@ Ldead0:
 }
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %1 = add i32 0, 4
   %2 = sitofp i32 %1 to double
   %3 = call double @test(double %2)

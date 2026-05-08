@@ -21,9 +21,9 @@ declare i32 @atoi(i8*)
 
 @overload = global i32 0
 
-define i1 @overload__i1(i1 %arg_n) {
+define i1 @overload__i1(i1 %.arg_n) {
   %n = alloca i1
-  store i1 %arg_n, i1* %n
+  store i1 %.arg_n, i1* %n
   %1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([20 x i8], [20 x i8]* @.str.0, i32 0, i32 0))
   %2 = add i1 0, 0
   ret i1 %2
@@ -31,9 +31,9 @@ Ldead0:
   ret i1 0
 }
 
-define double @overload__double(double %arg_n) {
+define double @overload__double(double %.arg_n) {
   %n = alloca double
-  store double %arg_n, double* %n
+  store double %.arg_n, double* %n
   %1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.1, i32 0, i32 0))
   %2 = fadd double 0.0, 2.2
   %3 = add i32 0, 2
@@ -77,11 +77,11 @@ Ldead1:
   ret double 0.0
 }
 
-define i32 @overload__double_double(double %arg_b, double %arg_b1) {
+define i32 @overload__double_double(double %.arg_b, double %.arg_b1) {
   %b = alloca double
-  store double %arg_b, double* %b
+  store double %.arg_b, double* %b
   %b1 = alloca double
-  store double %arg_b1, double* %b1
+  store double %.arg_b1, double* %b1
   %overload = alloca double
   %1 = add i32 0, 2
   %2 = load i32, i32* @overload
@@ -94,20 +94,20 @@ Ldead2:
   ret i32 0
 }
 
-define i32 @overload__i32_i32(i32 %arg_b, i32 %arg_b1) {
+define i32 @overload__i32_i32(i32 %.arg_b, i32 %.arg_b1) {
   %b = alloca i32
-  store i32 %arg_b, i32* %b
+  store i32 %.arg_b, i32* %b
   %b1 = alloca i32
-  store i32 %arg_b1, i32* %b1
+  store i32 %.arg_b1, i32* %b1
   %1 = add i32 0, 5
   ret i32 %1
 Ldead3:
   ret i32 0
 }
 
-define i32 @main__i32(i32 %arg_n) {
+define i32 @main__i32(i32 %.arg_n) {
   %n = alloca i32
-  store i32 %arg_n, i32* %n
+  store i32 %.arg_n, i32* %n
   %1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([19 x i8], [19 x i8]* @.str.3, i32 0, i32 0))
   %2 = add i32 0, 5
   ret i32 %2
@@ -116,12 +116,12 @@ Ldead4:
 }
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %a = alloca i32
   %d = alloca double
   %b = alloca i32
@@ -142,7 +142,7 @@ define i32 @main(i32 %argc, i8** %argv) {
   %11 = alloca i1
   %12 = alloca i1
   %13 = alloca i1
-  %14 = load i32, i32* %args_length
+  %14 = load i32, i32* %.args_length
   %15 = add i32 0, 0
   %16 = icmp sgt i32 %14, %15
   br i1 %16, label %L5, label %L6
@@ -234,7 +234,7 @@ L10:
   %86 = call i32 @main__i32(i32 %85)
   %87 = sitofp i32 %86 to double
   %88 = fadd double %84, %87
-  %89 = load i32, i32* %args_length
+  %89 = load i32, i32* %.args_length
   %90 = add i32 0, 1
   %91 = sub i32 %89, %90
   %92 = load i8**, i8*** %args
@@ -811,7 +811,7 @@ L150:
   br label %L151
 L151:
   %308 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.4, i32 0, i32 0))
-  %309 = load i32, i32* %args_length
+  %309 = load i32, i32* %.args_length
   %310 = fadd double 0.0, 1.1
   %311 = sitofp i32 %309 to double
   %312 = fadd double %311, %310

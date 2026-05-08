@@ -8,18 +8,18 @@ declare i32 @atoi(i8*)
 @.str.false = private unnamed_addr constant [6 x i8] c"false\00"
 
 
-define i32 @a(i32 %arg_input) {
+define i32 @a(i32 %.arg_input) {
   %input = alloca i32
-  store i32 %arg_input, i32* %input
+  store i32 %.arg_input, i32* %input
   %1 = load i32, i32* %input
   ret i32 %1
 Ldead0:
   ret i32 0
 }
 
-define i32 @b(i32 %arg_input) {
+define i32 @b(i32 %.arg_input) {
   %input = alloca i32
-  store i32 %arg_input, i32* %input
+  store i32 %.arg_input, i32* %input
   %1 = load i32, i32* %input
   ret i32 %1
 Ldead1:

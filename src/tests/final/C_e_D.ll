@@ -25,12 +25,12 @@ declare i32 @atoi(i8*)
 @d = global i32 0
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %i = alloca i32
   %a = alloca i32
   %i1 = alloca i32

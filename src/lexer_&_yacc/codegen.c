@@ -395,7 +395,7 @@ int codegen_expression(struct node *expr) {
         }
         case Length: {
             struct node *id = getchild(expr, 0);
-            printf("  %%%d = load i32, i32* %%%s_length\n", temporary, id->token);
+            printf("  %%%d = load i32, i32* %%.%s_length\n", temporary, id->token);
             return temporary++;
         }
         case ParseArgs: {
@@ -433,7 +433,7 @@ int codegen_expression(struct node *expr) {
                     arg_len_regs[i] = -1;
 
                     if (arg->type == type_string_array && arg->category == Id) {
-                        printf("  %%%d = load i32, i32* %%%s_length\n", temporary, arg->token);
+                        printf("  %%%d = load i32, i32* %%.%s_length\n", temporary, arg->token);
                         arg_len_regs[i] = temporary++;
                     }
                 }
@@ -642,10 +642,10 @@ void codegen_parameters(struct node *params_node) {
         struct node *type_node = getchild(param, 0);
         struct node *id_node = getchild(param, 1);
         enum type t = category_to_type(type_node->category);
-        printf("%s %%arg_%s", get_llvm_type(t), id_node->token);
+        printf("%s %%.arg_%s", get_llvm_type(t), id_node->token);
 
         if (t == type_string_array)
-            printf(", i32 %%arg_%s_len", id_node->token);
+            printf(", i32 %%.arg_%s_len", id_node->token);
     }
 }
 
@@ -698,13 +698,13 @@ void codegen_method(struct node *method) {
         const char *args_name = args_id->token;
         printf("define i32 @main(i32 %%argc, i8** %%argv) {\n");
 
-        printf("  %%args_base = getelementptr inbounds i8*, i8** %%argv, i32 1\n");
+        printf("  %%.args_base = getelementptr inbounds i8*, i8** %%argv, i32 1\n");
         printf("  %%%s = alloca i8**\n", args_name);
-        printf("  store i8** %%args_base, i8*** %%%s\n", args_name);
+        printf("  store i8** %%.args_base, i8*** %%%s\n", args_name);
 
-        printf("  %%args_len_val = sub i32 %%argc, 1\n");
-        printf("  %%%s_length = alloca i32\n", args_name);
-        printf("  store i32 %%args_len_val, i32* %%%s_length\n", args_name);
+        printf("  %%.args_len_val = sub i32 %%argc, 1\n");
+        printf("  %%.%s_length = alloca i32\n", args_name);
+        printf("  store i32 %%.args_len_val, i32* %%.%s_length\n", args_name);
     } else {
         char *fn_name = mangle_name_from_ast(id_node->token, params_node);
         printf("define %s @%s(", get_llvm_type(ret_type), fn_name);
@@ -719,11 +719,11 @@ void codegen_method(struct node *method) {
             enum type pt = category_to_type(t_node->category);
             const char *llvm_t = get_llvm_type(pt);
             printf("  %%%s = alloca %s\n", i_node->token, llvm_t);
-            printf("  store %s %%arg_%s, %s* %%%s\n", llvm_t, i_node->token, llvm_t, i_node->token);
+            printf("  store %s %%.arg_%s, %s* %%%s\n", llvm_t, i_node->token, llvm_t, i_node->token);
             if (pt == type_string_array) {
 
-                printf("  %%%s_length = alloca i32\n", i_node->token);
-                printf("  store i32 %%arg_%s_len, i32* %%%s_length\n", i_node->token, i_node->token);
+                printf("  %%.%s_length = alloca i32\n", i_node->token);
+                printf("  store i32 %%.arg_%s_len, i32* %%.%s_length\n", i_node->token, i_node->token);
             }
         }
     }

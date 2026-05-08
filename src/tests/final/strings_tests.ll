@@ -18,15 +18,15 @@ declare i32 @atoi(i8*)
 @i = global i32 0
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %a = alloca i32
   %1 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([7 x i8], [7 x i8]* @.str.0, i32 0, i32 0))
-  %2 = load i32, i32* %args_length
+  %2 = load i32, i32* %.args_length
   store i32 %2, i32* %a
   %3 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([3 x i8], [3 x i8]* @.str.str, i32 0, i32 0), i8* getelementptr inbounds ([22 x i8], [22 x i8]* @.str.1, i32 0, i32 0))
   %4 = load i32, i32* %a

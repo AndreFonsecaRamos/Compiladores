@@ -10,9 +10,9 @@ declare i32 @atoi(i8*)
 @.str.1 = private unnamed_addr constant [2 x i8] c"\0A\00"
 
 
-define i32 @a(i32 %arg_input) {
+define i32 @a(i32 %.arg_input) {
   %input = alloca i32
-  store i32 %arg_input, i32* %input
+  store i32 %.arg_input, i32* %input
   %i = alloca i32
   %1 = add i32 0, 0
   store i32 %1, i32* %i
@@ -39,9 +39,9 @@ Ldead3:
   ret i32 0
 }
 
-define i32 @b(i32 %arg_input) {
+define i32 @b(i32 %.arg_input) {
   %input = alloca i32
-  store i32 %arg_input, i32* %input
+  store i32 %.arg_input, i32* %input
   %k = alloca i32
   %1 = add i32 0, 0
   store i32 %1, i32* %k
@@ -91,12 +91,12 @@ Ldead13:
 }
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %input = alloca i32
   %aux = alloca i32
   %aux1 = alloca i32

@@ -8,9 +8,9 @@ declare i32 @atoi(i8*)
 @.str.false = private unnamed_addr constant [6 x i8] c"false\00"
 
 
-define i32 @factorial(i32 %arg_n) {
+define i32 @factorial(i32 %.arg_n) {
   %n = alloca i32
-  store i32 %arg_n, i32* %n
+  store i32 %.arg_n, i32* %n
   %1 = load i32, i32* %n
   %2 = add i32 0, 0
   %3 = icmp eq i32 %1, %2
@@ -35,12 +35,12 @@ Ldead4:
 }
 
 define i32 @main(i32 %argc, i8** %argv) {
-  %args_base = getelementptr inbounds i8*, i8** %argv, i32 1
+  %.args_base = getelementptr inbounds i8*, i8** %argv, i32 1
   %args = alloca i8**
-  store i8** %args_base, i8*** %args
-  %args_len_val = sub i32 %argc, 1
-  %args_length = alloca i32
-  store i32 %args_len_val, i32* %args_length
+  store i8** %.args_base, i8*** %args
+  %.args_len_val = sub i32 %argc, 1
+  %.args_length = alloca i32
+  store i32 %.args_len_val, i32* %.args_length
   %argument = alloca i32
   %1 = add i32 0, 7
   store i32 %1, i32* %argument
