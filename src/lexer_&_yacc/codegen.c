@@ -37,10 +37,10 @@ str_entry *str_list = NULL;
 
 /* adiciona uma string a lista (calculando o comprimento real, contando */
 /* escapes como \n, \t, etc. como um caracter)                          */
-void add_string(const char *token) {
+void adicionar_string(const char *token) {
     str_entry *novo = malloc(sizeof(str_entry));
-    novo->token = strdup(token);
-    novo->id = str_counter++;
+    novo -> token = strdup(token);
+    novo -> id = str_counter++;
 
     int len = 0;
     for(int i = 1; token[i] != '"' && token[i] != '\0'; i++){
@@ -48,7 +48,7 @@ void add_string(const char *token) {
         len++;
     }
     novo->length = len + 1;      /* +1 para o '\0' final */
-    novo->next = NULL;
+    novo -> next = NULL;
 
     /* Insere no fim da lista */
     if(str_list == NULL){
@@ -151,7 +151,7 @@ char* get_var_ptr(const char *name, enum type expected) {
 /* Helpers para literais numericos */
 
 /* Java permite underscores nos numeros (123_456). Temos de os tirar */
-static char *strip_underscores(const char *s) {
+static char *remover_underscores(const char *s) {
     char *r = malloc(strlen(s) + 1);
     int j = 0;
     for(int i = 0; s[i] != '\0'; i++){
@@ -165,7 +165,7 @@ static char *strip_underscores(const char *s) {
 }
 
 /* arranja o formato dos doubles: ".5" -> "0.5" e "1e10" -> "1.0e10" */
-static char *fix_decimal_format(const char *s) {
+static char *arranjar_formato_decimal(const char *s) {
     if(s[0] == '.'){
         char *r = malloc(strlen(s) + 2);
         r[0] = '0';
@@ -215,7 +215,7 @@ static void free_params_local(param_entry *p) {
     }
 }
 
-static int count_methods_with_name(const char *name) {
+static int contar_metodos_com_nome(const char *name) {
     int c = 0;
     for (symbol_entry *s = gtable->symbols; s != NULL; s = s->next) {
         if (s->is_method && strcmp(s->name, name) == 0) c++;
@@ -233,9 +233,9 @@ static const char *llvm_type_mangle(enum type t) {
     }
 }
 
-/* So fazemos mangling se houver overloading (mais que 1 metodo com o mesmo nome) */
+/* so fazemos mangling se houver overloading (mais que 1 metodo com o mesmo nome) */
 static char *mangle_name(const char *name, param_entry *params) {
-    if (gtable == NULL || count_methods_with_name(name) <= 1) {
+    if (gtable == NULL || contar_metodos_com_nome(name) <= 1) {
         return strdup(name);
     }
 
@@ -253,7 +253,7 @@ static char *mangle_name(const char *name, param_entry *params) {
 }
 
 static char *mangle_name_from_ast(const char *name, struct node *params_node) {
-    if (gtable == NULL || count_methods_with_name(name) <= 1) {
+    if (gtable == NULL || contar_metodos_com_nome(name) <= 1) {
         return strdup(name);
     }
 
@@ -282,19 +282,19 @@ int cast_to_double(int reg, enum type t) {
 }
 
 
-/* Forward declaration */
+/* forward declaration */
 static void codegen_statement(struct node *stmt);
 
-/* Conta quantos nodos And/Or existem na sub-arvore. Usado para pre-alocar */
+/* conta quantos nodos And/Or existem na sub-arvore. Usado para pre-alocar */
 /* todos os slots no entry block do metodo (evita stack overflow em loops) */
-static int count_and_or(struct node *n) {
+static int contar_and_or(struct node *n) {
     if (n == NULL) return 0;
 
     int count = 0;
     if (n->category == And || n->category == Or) count = 1;
 
     for (struct node_list *curr = n->children; curr != NULL; curr = curr->next) {
-        count += count_and_or(curr->node);
+        count += contar_and_or(curr->node);
     }
     return count;
 }
@@ -307,14 +307,14 @@ int codegen_expression(struct node *expr) {
 
         /* Literais */
         case Natural: {
-            char *clean = strip_underscores(expr->token);
+            char *clean = remover_underscores(expr->token);
             printf("  %%%d = add i32 0, %s\n", temporary, clean);
             free(clean);
             return temporary++;
         }
         case Decimal: {
-            char *clean = strip_underscores(expr->token);
-            char *fixed = fix_decimal_format(clean);
+            char *clean = remover_underscores(expr->token);
+            char *fixed = arranjar_formato_decimal(clean);
             free(clean);
             printf("  %%%d = fadd double 0.0, %s\n", temporary, fixed);
             free(fixed);
@@ -335,7 +335,7 @@ int codegen_expression(struct node *expr) {
             return temporary++;
         }
 
-        /* Atribuicao */
+        /* atribuicao */
         case Assign: {
             struct node *l_node = getchild(expr, 0);
             struct node *r_node = getchild(expr, 1);
@@ -355,15 +355,15 @@ int codegen_expression(struct node *expr) {
             return r_reg;  /* O valor da atribuicao e o que foi atribuido */
         }
 
-        /* Operacoes aritmeticas */
+        /* operacoes aritmeticas */
         case Add: case Sub: case Mul: case Div: case Mod: {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
             int rl = codegen_expression(l);
             int rr = codegen_expression(r);
 
-            if (expr->type == type_double) {
-                /* Operacao em doubles - fazer cast de int para double se necessario */
+            if (expr -> type == type_double) {
+                /* operacao em doubles - fazer cast de int para double se necessario */
                 rl = cast_to_double(rl, l->type);
                 rr = cast_to_double(rr, r->type);
 
@@ -373,7 +373,7 @@ int codegen_expression(struct node *expr) {
                 if (expr->category == Div) printf("  %%%d = fdiv double %%%d, %%%d\n", temporary, rl, rr);
                 if (expr->category == Mod) printf("  %%%d = frem double %%%d, %%%d\n", temporary, rl, rr);
             } else {
-                /* Operacao em ints */
+                /* operacao em ints */
                 if (expr->category == Add) printf("  %%%d = add i32 %%%d, %%%d\n", temporary, rl, rr);
                 if (expr->category == Sub) printf("  %%%d = sub i32 %%%d, %%%d\n", temporary, rl, rr);
                 if (expr->category == Mul) printf("  %%%d = mul i32 %%%d, %%%d\n", temporary, rl, rr);
@@ -383,7 +383,7 @@ int codegen_expression(struct node *expr) {
             return temporary++;
         }
 
-        /* Operadores unarios + e - */
+        /* operadores unarios + e - */
         case Plus: case Minus: {
             struct node *l = getchild(expr, 0);
             int rl = codegen_expression(l);
@@ -400,7 +400,7 @@ int codegen_expression(struct node *expr) {
             return temporary++;
         }
 
-        /* Operador ! */
+        /* operador ! */
         case Not: {
             struct node *l = getchild(expr, 0);
             int rl = codegen_expression(l);
@@ -409,7 +409,7 @@ int codegen_expression(struct node *expr) {
             return temporary++;
         }
 
-        /* Comparacoes */
+        /* comparacoes */
         case Eq: case Ne: case Lt: case Gt: case Le: case Ge: {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
@@ -420,13 +420,13 @@ int codegen_expression(struct node *expr) {
 
             if (is_double) {
                 /* Se algum dos operandos for double, fazer comparacao em double */
-                rl = cast_to_double(rl, l->type);
-                rr = cast_to_double(rr, r->type);
+                rl = cast_to_double(rl, l -> type);
+                rr = cast_to_double(rr, r -> type);
 
                 const char *op = "";
                 if (expr->category == Eq) op = "oeq";
                 if (expr->category == Ne) op = "one";
-                if (expr->category == Lt) op = "olt";
+                if (expr -> category == Lt) op = "olt";
                 if (expr->category == Gt) op = "ogt";
                 if (expr->category == Le) op = "ole";
                 if (expr->category == Ge) op = "oge";
@@ -434,12 +434,12 @@ int codegen_expression(struct node *expr) {
             } else {
                 /* Comparacao em ints (ou booleans) */
                 const char *op = "";
-                if (expr->category == Eq) op = "eq";
-                if (expr->category == Ne) op = "ne";
-                if (expr->category == Lt) op = "slt";
-                if (expr->category == Gt) op = "sgt";
-                if (expr->category == Le) op = "sle";
-                if (expr->category == Ge) op = "sge";
+                if (expr -> category == Eq) op = "eq";
+                if (expr -> category == Ne) op = "ne";
+                if (expr -> category == Lt) op = "slt";
+                if (expr -> category == Gt) op = "sgt";
+                if (expr -> category == Le) op = "sle";
+                if (expr -> category == Ge) op = "sge";
                 const char *l_type = get_llvm_type(l->type);
                 printf("  %%%d = icmp %s %s %%%d, %%%d\n", temporary, op, l_type, rl, rr);
             }
@@ -855,23 +855,23 @@ static void codegen_statement(struct node *stmt) {
                     /* Buscar o tipo de retorno esperado */
                     symbol_entry *ret_sym = NULL;
                     if (current_mt != NULL) {
-                        ret_sym = find_symbol(current_mt->symbols, "return");
+                        ret_sym = find_symbol(current_mt -> symbols, "return");
                     }
                     enum type expected;
                     if (ret_sym != NULL) {
-                        expected = string_to_type(ret_sym->type_str);
+                        expected = string_to_type(ret_sym -> type_str);
                     } else {
                         expected = ret_expr->type;
                     }
 
-                    /* Cast int->double se for preciso */
-                    if (expected == type_double && ret_expr->type == type_int) {
-                        r_reg = cast_to_double(r_reg, ret_expr->type);
+                    /* cast int -> double se for preciso */
+                    if (expected == type_double && ret_expr -> type == type_int) {
+                        r_reg = cast_to_double(r_reg, ret_expr -> type);
                     }
                     printf("  ret %s %%%d\n", get_llvm_type(expected), r_reg);
                 }
             } else {
-                /* Return sem valor */
+                /* return sem valor */
                 if (in_main_entry) {
                     printf("  ret i32 0\n");
                 } else {
@@ -879,7 +879,7 @@ static void codegen_statement(struct node *stmt) {
                 }
             }
 
-            /* Cria um bloco morto para o que vier depois - (codigo inalcansavel) */
+            /* cria um bloco morto para o que vier depois - (codigo inalcansavel) */
             printf("Ldead%d:\n", label_counter++);
             break;
         }
@@ -906,7 +906,7 @@ void codegen_parameters(struct node *params_node) {
 
         struct node *type_node = getchild(param, 0);
         struct node *id_node   = getchild(param, 1);
-        enum type t = category_to_type(type_node->category);
+        enum type t = category_to_type(type_node -> category);
 
         /* usamos prefixo .arg_ para nao interferir com nomes de variaveis do utilizador */
         printf("%s %%.arg_%s", get_llvm_type(t), id_node->token);
@@ -920,7 +920,7 @@ void codegen_parameters(struct node *params_node) {
 
 
 /* construimos a assinatura do metodo (usado para encontrar a method_table certa) */
-static char *build_sig_from_ast(const char *name, struct node *params_node) {
+static char *construir_assinatura_ast(const char *name, struct node *params_node) {
     char buf[4096];
     strcpy(buf, name);
     strcat(buf, "(");
@@ -951,10 +951,10 @@ void codegen_method(struct node *method) {
     enum type ret_type = category_to_type(type_node->category);
 
     /* Encontra a method_table correspondente para podermos resolver simbolos locais */
-    char *sig = build_sig_from_ast(id_node->token, params_node);
-    method_table *mt = gtable->methods;
+    char *sig = construir_assinatura_ast(id_node -> token, params_node);
+    method_table *mt = gtable -> methods;
     while (mt != NULL) {
-        if (strcmp(mt->signature, sig) == 0) {
+        if (strcmp(mt -> signature, sig) == 0) {
             current_mt = mt;
             break;
         }
@@ -962,7 +962,7 @@ void codegen_method(struct node *method) {
     }
     free(sig);
 
-    /* Verifica se este e o main do programa */
+    /* verifica se este e o main do programa */
     int is_main_entry = 0;
     struct node *first_param = getchild(params_node, 0);
     if (strcmp(id_node->token, "main") == 0 && first_param != NULL) {
@@ -1041,8 +1041,8 @@ void codegen_method(struct node *method) {
     /* senao em loops grandes deita o stack abaixo (cada iteracao fazia novo alloca)*/
     ao_alloca_base = temporary;
     ao_alloca_next = 0;
-    int ao_count = count_and_or(body);
-    for (int i = 0; i < ao_count; i++) {
+    int ao_count = contar_and_or(body);
+    for(int i = 0; i < ao_count; i++){
         printf("  %%%d = alloca i1\n", temporary++);
     }
 
@@ -1067,7 +1067,8 @@ void codegen_method(struct node *method) {
         printf("  ret double 0.0\n");
     } else if (ret_type == type_boolean) {
         printf("  ret i1 0\n");
-    } else {
+    } 
+    else {
         printf("  ret i32 0\n");
     }
 
@@ -1076,21 +1077,21 @@ void codegen_method(struct node *method) {
 }
 
 
-/* Faz uma travessia da AST para coletar todas as strings literais usadas em prints */
-void pre_collect_strings(struct node *stmt) {
+/* faaz uma travessia da AST para coletar todas as strings literais usadas em prints */
+void recolher_strings(struct node *stmt) {
     if(stmt == NULL) return;
 
     if(stmt -> category == Print) {
         struct node *child = getchild(stmt, 0);
         if (child != NULL && child->category == StrLit) {
-            add_string(child->token);
+            adicionar_string(child->token);
         }
         return;
     }
 
     /* para qualquer outro nodo, recurse nos filhos */
     for(struct node_list *curr = stmt->children; curr != NULL; curr = curr->next) {
-        pre_collect_strings(curr->node);
+        recolher_strings(curr->node);
     }
 }
 
@@ -1104,7 +1105,7 @@ void codegen_program(struct node *program) {
         struct node *member;
         while ((member = getchild(program, idx++)) != NULL) {
             if (member->category == MethodDecl) {
-                pre_collect_strings(member);
+                recolher_strings(member);
             }
         }
     }
@@ -1125,7 +1126,7 @@ void codegen_program(struct node *program) {
         char *c_str = malloc(strlen(curr->token) * 4 + 1);
         c_str[0] = '\0';
 
-        /* Faz a conversao dos escapes do Java para o formato do LLVM IR */
+        /* Faz a conversao dos escapes do java para o formato do LLVM IR */
         for (int i = 1; curr->token[i] != '"'; i++) {
             if (curr->token[i] == '\\' && curr->token[i+1] == 'n') {
                 strcat(c_str, "\\0A");
@@ -1191,7 +1192,7 @@ void codegen_program(struct node *program) {
         }
     }
 
-    /* 7 - Se o programa nao tem main com String[] args, geramos um main vazio */
+    /* 7- Se o programa nao tem main com String[] args, geramos um main vazio */
     /*    para o LLVM nao se queixar                                          */
     if(!main_generated){
         printf("define i32 @main(i32 %%argc, i8** %%argv) {\nentry:\n  ret i32 0\n}\n");
