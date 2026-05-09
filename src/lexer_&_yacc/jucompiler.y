@@ -562,7 +562,8 @@ void yyerror(char *s) {
         printf("Line %d, col %d: %s: \n", token_line, token_col, s);
     } else if (strcmp(error_token, "\"") == 0) {
         printf("Line %d, col %d: %s: \"%s\"\n", token_line, token_col, s, buffer_string ? buffer_string : "");
-    } else {
+    } 
+    else {
         printf("Line %d, col %d: %s: %s\n", token_line, token_col, s, error_token);
     }
 }

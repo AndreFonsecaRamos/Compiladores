@@ -8,7 +8,7 @@ Uma das decisões técnicas foi a **resolução de ambiguidades**, em especial o
 
 No que toca às precedências dos operadores, seguimos a precedência padrão do Juc, da menor para a maior precedência, declarando os operadores em blocos no ficheiro Yacc. Por exemplo, a atribuição (`=`) foi definida com associatividade à direita (`%right`), enquanto a grande maioria dos operadores binários foi definida com associatividade à esquerda (`%left`). Os operadores unários (sinais e a negação lógica) têm a maior precedência através de pseudotokens criados apenas para esse fim (`UNARY_MINUS`, `UNARY_PLUS`).
 
-Outra opção importante na reescrita foi a estrutura em **listas e blocos** (`DeclList`, `StatementList`). Para evitar árvores demasiado profundas ou mal formadas, optámos por "espalhar" os filhos (usando iterações `while` na ação semântica) e colocá-los diretamente num nó pai temporário `Program` (que atua como lista). No final, ao compor o nó `Block` ou a raiz real do `Program`, todos os filhos dessa lista temporária são extraídos e adicionados, resultando numa AST plana e fácil de percorrer.
+Outra opção importante na reescrita foi a estrutura em **listas e blocos** (`DeclList`, `StatementList`). Para evitar árvores demasiado profundas ou mal formadas, optámos por "espalhar" os filhos (usando iterações `while` na ação semântica) e colocá-los diretamente num nó pai temporário `Program` (que atua como lista). No final, ao compor o nó `Block` ou a raiz real do `Program`, todos os filhos dessa lista temporária são extraídos e adicionados, resultando numa AST fácil de percorrer.
 
 No (`main`) implementámos diferentes formas de compilação, lexicais, sintáticas ou semânticas, dependendo das *flags* da linha de comandos, permitindo que o desenvolvimento e o debug ocorressem de forma faseada. O *parser* tenta sempre recuperar de erros e continuar a análise quando se trata de declarações mal formatadas.
 
@@ -36,7 +36,7 @@ Optámos por usar "Global + Múltiplos Locais". Existe uma tabela global (`class
 
 ## (iii) Geração de Código (LLVM IR)
 
-Na última etapa, o compilador traduz a AST validada para código intermédio LLVM, seguindo os princípios de *Static Single Assignment*. Toda a lógica encontra-se implementada no ficheiro `codegen.c`.
+Na última etapa, o compilador traduz a AST validada para código intermédio LLVM. Toda a lógica encontra-se implementada no ficheiro `codegen.c`.
 
 Como o LLVM exige que os registos sejam atribuídos uma única vez, a nossa escolha técnica para lidar com as variáveis mutáveis foi a utilização ativa da **memória (Stack)** local, usando, `alloca`, `store` e `load`. Para cada variável declarada e cada argumento passado, um espaço próprio é alocado. Assim, uma atribuição traduz-se numa expressão cujo resultado final é guardado com um `store`, enquanto uma leitura de variável desencadeia um `load` imediato para um novo registo temporário.
 
