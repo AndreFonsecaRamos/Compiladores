@@ -81,7 +81,7 @@ static struct node *getchild(struct node *n, int index) {
 static int countchildren(struct node *n) {
     if (n == NULL) return 0;
     int count = 0;
-    for (struct node_list *curr = n->children; curr != NULL; curr = curr->next) {
+    for (struct node_list *curr = n -> children; curr != NULL; curr = curr -> next) {
         count++;
     }
     return count;
@@ -92,7 +92,7 @@ static int nome_param_repetido(struct node *params_node, const char *name, int l
     for(int i = 0; i < limit; i++){
         struct node *pd  = getchild(params_node, i);
         struct node *pid = getchild(pd, 1);
-        if (strcmp(pid->token, name) == 0) return 1;
+        if (strcmp(pid -> token, name) == 0) return 1;
     }
     return 0;
 }
@@ -104,21 +104,21 @@ static void add_param(param_entry **list, const char *type_str) {
     p -> type_str = strdup(type_str);
     p -> next = NULL;
 
-    if(*list == NULL) {
+    if(*list == NULL){
         *list = p;
         return;
     }
 
     /* Inserir no fim da lista */
     param_entry *cur = *list;
-    while (cur->next != NULL) cur = cur->next;
-    cur->next = p;
+    while (cur -> next != NULL) cur = cur -> next;
+    cur -> next = p;
 }
 
 static void free_params(param_entry *p) {
     while (p != NULL) {
         param_entry *prox = p->next;
-        free(p->type_str);
+        free(p -> type_str);
         free(p);
         p = prox;
     }
@@ -129,15 +129,15 @@ static char *construir_assinatura(const char *name, param_entry *params) {
     /* calcular o tamanho necessario primeiro */
     int tamanho = strlen(name) + 3;  /* +3 para "()\0" */
     for (param_entry *p = params; p != NULL; p = p->next) {
-        tamanho += strlen(p->type_str) + 1;
+        tamanho += strlen(p -> type_str) + 1;
     }
 
     char *assinatura = malloc(tamanho);
     strcpy(assinatura, name);
     strcat(assinatura, "(");
-    for (param_entry *p = params; p != NULL; p = p->next) {
+    for (param_entry *p = params; p != NULL; p = p -> next) {
         strcat(assinatura, p->type_str);
-        if (p->next != NULL) strcat(assinatura, ",");
+        if (p -> next != NULL) strcat(assinatura, ",");
     }
     strcat(assinatura, ")");
 
@@ -172,13 +172,13 @@ static symbol_entry *add_symbol(symbol_entry **list,
     /* Inserir no fim para preservar a ordem de declaracao */
     symbol_entry *cur = *list;
     while(cur->next != NULL) cur = cur -> next;
-    cur->next = s;
+    cur -> next = s;
     return s;
 }
 
 static symbol_entry *find_symbol(symbol_entry *list, const char *name) {
     for(symbol_entry *cur = list; cur != NULL; cur = cur->next) {
-        if(strcmp(cur->name, name) == 0) return cur;
+        if(strcmp(cur -> name, name) == 0) return cur;
     }
     return NULL;
 }
@@ -194,7 +194,7 @@ static symbol_entry *procurar_metodo_por_assinatura(symbol_entry *list, const ch
         int igual = (strcmp(assinatura, alvo) == 0);
         free(assinatura);
 
-        if (igual) {
+        if(igual){
             free(alvo);
             return cur;
         }
@@ -207,7 +207,7 @@ static symbol_entry *procurar_metodo_por_assinatura(symbol_entry *list, const ch
 /* procura uma variavel: primeiro no scope local, depois no global */
 static symbol_entry *procurar_variavel(method_table *mt, const char *name) {
     /* tenta primeiro no metodo atual (locais e parametros) */
-    symbol_entry *s = find_symbol(mt->symbols, name);
+    symbol_entry *s = find_symbol(mt -> symbols, name);
     if (s != NULL && !s->is_method) return s;
 
     /* Senao tenta nas variaveis globais (FieldDecl) */
@@ -223,9 +223,9 @@ static symbol_entry *procurar_variavel(method_table *mt, const char *name) {
 static method_table *criar_tabela_metodo(const char *name, const char *sig) {
     method_table *mt = malloc(sizeof(method_table));
     mt ->name      = strdup(name);
-    mt->signature = strdup(sig);
-    mt->symbols   = NULL;
-    mt->next      = NULL;
+    mt -> signature = strdup(sig);
+    mt -> symbols   = NULL;
+    mt -> next      = NULL;
 
     if (gtable->methods == NULL) {
         gtable->methods = mt;
@@ -252,13 +252,13 @@ static void construir_tabela_global(struct node *program) {
     struct node *membro;
     while ((membro = getchild(program, i++)) != NULL) {
 
-        /* Variaveis globais (FieldDecl) */
+        /* variaveis globais (FieldDecl) */
         if(membro -> category == FieldDecl){
             struct node *type_node = getchild(membro, 0);
             struct node *id_node   = getchild(membro, 1);
             enum type tipo_var = category_to_type(type_node->category);
 
-            /* Verificar se ja foi declarada */
+            /* verificar se ja foi declarada */
             int ja_definido = 0;
             for(symbol_entry *s = gtable->symbols; s != NULL; s = s->next){
                 if (!s->is_method && strcmp(s->name, id_node->token) == 0) {
@@ -271,12 +271,12 @@ static void construir_tabela_global(struct node *program) {
                 printf("Line %d, col %d: Symbol _ is reserved\n",
                        id_node->line, id_node->col);
                 sem_errors++;
-                membro->type = type_undef;
+                membro -> type = type_undef;
             } else if (ja_definido) {
                 printf("Line %d, col %d: Symbol %s already defined\n",
                        id_node->line, id_node->col, id_node->token);
                 sem_errors++;
-                membro->type = type_undef;
+                membro -> type = type_undef;
             }
             else {
                 add_symbol(&gtable->symbols, id_node->token, tipo_var, 0, 0,
@@ -285,7 +285,7 @@ static void construir_tabela_global(struct node *program) {
         }
 
         /* Metodos (MethodDecl) */
-        else if (membro->category == MethodDecl) {
+        else if (membro -> category == MethodDecl) {
             struct node *cabecalho   = getchild(membro, 0);
             struct node *type_node   = getchild(cabecalho, 0);
             struct node *id_node     = getchild(cabecalho, 1);
@@ -312,7 +312,7 @@ static void construir_tabela_global(struct node *program) {
                 add_param(&params_metodo, type_to_string(category_to_type(pt->category)));
             }
 
-            if(e_underscore_reservado(id_node->token)) {
+            if(e_underscore_reservado(id_node->token)){
                 printf("Line %d, col %d: Symbol _ is reserved\n",
                        id_node->line, id_node->col);
                 sem_errors++;
@@ -325,7 +325,7 @@ static void construir_tabela_global(struct node *program) {
                 sem_errors++;
                 free(assinatura);
                 free_params(params_metodo);
-                membro->type = type_undef;
+                membro -> type = type_undef;
             } else {
                 /* adicionar o metodo a tabela global e criar a sua method_table */
                 symbol_entry *ms = add_symbol(&gtable->symbols, id_node->token, tipo_retorno, 1, 0,
@@ -349,7 +349,7 @@ static void preencher_tabelas_metodos(struct node *program) {
     struct node *membro;
     while((membro = getchild(program, i++)) != NULL){
 
-        if(membro -> category != MethodDecl || membro -> type == type_undef) {
+        if(membro -> category != MethodDecl || membro -> type == type_undef){
             continue;
         }
 
@@ -385,8 +385,8 @@ static void preencher_tabelas_metodos(struct node *program) {
 
 /* Helper para imprimir o nome de um operador nas mensagens de erro */
 
-static const char *nome_operador(enum category c) {
-    switch (c) {
+static const char *nome_operador(enum category c){
+    switch (c){
         case Assign:           return "=";
         case Add: case Plus:   return "+";
         case Sub: case Minus:  return "-";
@@ -416,7 +416,7 @@ static void verificar_statement(struct node *stmt, method_table *mt);
 
 
 static void verificar_expressao(struct node *expr, method_table *mt) {
-    if (expr == NULL) return;
+    if(expr == NULL) return;
 
     /* primeiro processar os filhos (post-order) */
     /* excecao: para Call, o primeiro filho e o nome do metodo, nao uma expressao */
@@ -432,7 +432,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
         i_filho++;
     }
 
-    switch (expr -> category) {
+    switch(expr -> category) {
 
         /* Numero inteiro literal */
         case Natural: {
@@ -450,7 +450,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
             unsigned long long valor = strtoull(buf, NULL, 10);
 
             /* verificar se cabe num int (32 bits com sinal) */
-            if (valor > 2147483647ULL) {
+            if(valor > 2147483647ULL){
                 printf("Line %d, col %d: Number %s out of bounds\n",
                        expr->line, expr->col, expr->token);
                 sem_errors++;
@@ -549,8 +549,9 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                        type_to_string(operando -> type));
                 sem_errors++;
                 expr -> type = type_undef;
-            } else {
-                expr->type = operando -> type;
+            } 
+            else {
+                expr -> type = operando -> type;
             }
             break;
         }
@@ -558,9 +559,9 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
         /* Operador ! */
         case Not: {
             struct node *operando = getchild(expr, 0);
-            if (operando->type != type_boolean) {
+            if(operando->type != type_boolean){
                 printf("Line %d, col %d: Operator ! cannot be applied to type %s\n",
-                       expr->line, expr->col, type_to_string(operando->type));
+                       expr -> line, expr -> col, type_to_string(operando->type));
                 sem_errors++;
             }
             expr -> type = type_boolean;
@@ -578,13 +579,14 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                        nome_operador(expr->category),
                        type_to_string(l->type), type_to_string(r->type));
                 sem_errors++;
-                expr->type = type_undef;
+                expr -> type = type_undef;
             } 
             else {
                 /* se algum for double, o resultado e double */
                 if (l->type == type_double || r->type == type_double) {
                     expr->type = type_double;
-                } else {
+                } 
+                else {
                     expr->type = type_int;
                 }
             }
@@ -596,7 +598,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
             struct node *l = getchild(expr, 0);
             struct node *r = getchild(expr, 1);
 
-            if (expr -> category == Xor) {
+            if(expr -> category == Xor){
                 /* o ^ aceita int^int (bitwise) ou bool^bool (logico) */
                 int both_int  = (l->type == type_int     && r->type == type_int);
                 int both_bool = (l->type == type_boolean && r->type == type_boolean);
@@ -608,12 +610,14 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                            type_to_string(l->type), type_to_string(r->type));
                     sem_errors++;
                     expr -> type = type_undef;
-                } else {
+                } 
+                else{
                     expr->type = both_bool ? type_boolean : type_int;
                 }
-            } else {
+            } 
+            else{
                 /* << e >> so funcionam com ints */
-                if (l->type != type_int || r->type != type_int) {
+                if(l->type != type_int || r->type != type_int) {
                     printf("Line %d, col %d: Operator %s cannot be applied to types %s, %s\n",
                            expr->line, expr->col,
                            nome_operador(expr->category),
@@ -656,7 +660,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                        type_to_string(l->type), type_to_string(r->type));
                 sem_errors++;
             }
-            expr->type = type_boolean;
+            expr -> type = type_boolean;
             break;
         }
 
@@ -683,7 +687,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
 
             /* o lado direito tem de ser compativel com o esquerdo */
             /* String[] nunca pode ser atribuido                    */
-            if (!tipos_compativeis(r -> type, l -> type) || l->type == type_string_array) {
+            if(!tipos_compativeis(r -> type, l -> type) || l->type == type_string_array){
                 printf("Line %d, col %d: Operator = cannot be applied to types %s, %s\n",
                        expr->line, expr -> col,
                        type_to_string(l -> type), type_to_string(r->type));
@@ -701,7 +705,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                        expr->line, expr->col, type_to_string(target->type));
                 sem_errors++;
             }
-            expr->type = type_int;
+            expr -> type = type_int;
             break;
         }
 
@@ -728,7 +732,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                 printf("Line %d, col %d: Symbol _ is reserved\n",
                        id_node->line, id_node->col);
                 sem_errors++;
-                expr->type    = type_undef;
+                expr -> type    = type_undef;
                 id_node->type = type_undef;
                 break;
             }
@@ -749,7 +753,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
             symbol_entry *match_compativel = NULL;
             int n_compativeis = 0;
 
-            for (symbol_entry *sym = gtable->symbols; sym != NULL; sym = sym->next) {
+            for(symbol_entry *sym = gtable->symbols; sym != NULL; sym = sym->next){
                 if (!sym->is_method) continue;
                 if (strcmp(sym->name, id_node->token) != 0) continue;
 
@@ -768,7 +772,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                     if (!tipos_compativeis(tipos_args[i], tipo_param)) e_compativel = 0;
                 }
 
-                if (e_exato) {
+                if(e_exato){
                     match_exato = sym;
                     break;  /* match exato vence sempre */
                 }
@@ -790,7 +794,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                 id_node -> param_sig = construir_assinatura("", match_compativel->params);
                 id_node -> type = type_none;
             }
-            else if (n_compativeis > 1) {
+            else if(n_compativeis > 1){
                 /* mais que um metodo compativel - chamada ambigua */
                 param_entry *lista_args = NULL;
                 for (int i = 0; i < n_args; i++) {
@@ -826,7 +830,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
                 id_node->type = type_undef;
             }
 
-            if (tipos_args != NULL) free(tipos_args);
+            if(tipos_args != NULL) free(tipos_args);
             break;
         }
 
@@ -837,7 +841,7 @@ static void verificar_expressao(struct node *expr, method_table *mt) {
 
 
 static void verificar_statement(struct node *stmt, method_table *mt) {
-    if (stmt == NULL) return;
+    if(stmt == NULL) return;
 
     switch (stmt->category) {
 
@@ -982,7 +986,7 @@ static void verificar_metodos(struct node *program) {
         struct node *stmt;
         while ((stmt = getchild(corpo, j++)) != NULL) {
 
-            if (stmt->category == VarDecl) {
+            if (stmt -> category == VarDecl) {
                 /* Declaracao de variavel local      */
                 struct node *vt  = getchild(stmt, 0);
                 struct node *vid = getchild(stmt, 1);
@@ -1001,7 +1005,8 @@ static void verificar_metodos(struct node *program) {
                     add_symbol(&mt->symbols, vid->token, tipo_var, 0, 0,
                                vid->line, vid->col);
                 }
-            } else {
+            } 
+            else {
                 /*  Statement normal */
                 verificar_statement(stmt, mt);
             }
@@ -1015,7 +1020,7 @@ static void verificar_metodos(struct node *program) {
 void imprimir_tabela_classe(void) {
     printf("===== Class %s Symbol Table =====\n", gtable->name);
 
-    for (symbol_entry *s = gtable->symbols; s != NULL; s = s->next) {
+    for(symbol_entry *s = gtable->symbols; s != NULL; s = s->next) {
         if (s->is_method) {
             /* construir a string dos parametros: "(int,double)" */
             int tamanho = 3;  /* "()" + '\0' */
